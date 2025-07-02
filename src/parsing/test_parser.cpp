@@ -20,6 +20,18 @@ void printLocation(const LocationConfig& loc) {
     std::cout << "      cgi_pass: '" << loc.cgi_pass << "'\n";
 }
 
+void printServer(const ServerConfig& srv) {
+    std::cout << "    listen_port: " << srv.listen_port << "\n";
+    std::cout << "    server_name: '" << srv.server_name << "'\n";
+    std::cout << "    client_max_body_size: " << srv.client_max_body_size << "\n";
+    std::cout << "    error_pages:";
+    if (srv.error_pages.empty())
+        std::cout << " (none)";
+    for (std::map<int, std::string>::const_iterator it = srv.error_pages.begin(); it != srv.error_pages.end(); ++it)
+        std::cout << " [" << it->first << ": '" << it->second << "']";
+    std::cout << "\n";
+}
+
 int main() {
     std::ifstream file("configs/default.conf");
     if (!file) {
@@ -34,6 +46,7 @@ int main() {
         for (size_t i = 0; i < config.servers.size(); ++i) {
             const ServerConfig& srv = config.servers[i];
             std::cout << "  Server " << i+1 << ": " << srv.locations.size() << " location(s)." << std::endl;
+            printServer(srv);
             for (size_t j = 0; j < srv.locations.size(); ++j) {
                 std::cout << "    Location " << j+1 << ":\n";
                 printLocation(srv.locations[j]);

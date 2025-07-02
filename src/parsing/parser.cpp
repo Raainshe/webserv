@@ -3,6 +3,7 @@
 #include "parser.hpp"
 #include <stdexcept>
 #include <algorithm>
+#include <cstdlib>
 
 namespace {
     // Helper to advance and check tokens
@@ -26,6 +27,20 @@ namespace {
 
     bool isFalse(const std::string& val) {
         return val == "off" || val == "false" || val == "0";
+    }
+
+    size_t parseSizeWithSuffix(const std::string& str) {
+        char* end;
+        long long val = std::strtoll(str.c_str(), &end, 10);
+        if (end == str.c_str())
+            throw std::runtime_error("Parse error: invalid size value '" + str + "'");
+        if (*end == 'K' || *end == 'k') val *= 1024LL;
+        else if (*end == 'M' || *end == 'm') val *= 1024LL * 1024LL;
+        else if (*end == 'G' || *end == 'g') val *= 1024LL * 1024LL * 1024LL;
+        else if (*end != '\0')
+            throw std::runtime_error("Parse error: invalid size suffix in '" + str + "'");
+        if (val < 0) throw std::runtime_error("Parse error: negative size value");
+        return static_cast<size_t>(val);
     }
 
     LocationConfig parseLocation(TokenStream& ts) {
@@ -108,13 +123,42 @@ namespace {
             if (ts.peek().type == TOKEN_WORD && ts.peek().value == "location") {
                 LocationConfig loc = parseLocation(ts);
                 srv.locations.push_back(loc);
+            } else if (ts.peek().type == TOKEN_WORD) {
+                std::string directive = ts.peek().value;
+                ts.next();
+                if (directive == "listen") {
+                    expect(ts, TOKEN_WORD, "listen value");
+                    srv.listen_port = std::atoi(ts.next().value.c_str());
+                    expect(ts, TOKEN_SEMICOLON, "; after listen");
+                    ts.next();
+                } else if (directive == "server_name") {
+                    expect(ts, TOKEN_WORD, "server_name value");
+                    srv.server_name = ts.next().value;
+                    expect(ts, TOKEN_SEMICOLON, "; after server_name");
+                    ts.next();
+                } else if (directive == "error_page") {
+                    expect(ts, TOKEN_WORD, "error code");
+                    int code = std::atoi(ts.next().value.c_str());
+                    expect(ts, TOKEN_WORD, "error page path");
+                    std::string path = ts.next().value;
+                    srv.error_pages[code] = path;
+                    expect(ts, TOKEN_SEMICOLON, "; after error_page");
+                    ts.next();
+                } else if (directive == "client_max_body_size") {
+                    expect(ts, TOKEN_WORD, "client_max_body_size value");
+                    srv.client_max_body_size = parseSizeWithSuffix(ts.next().value);
+                    expect(ts, TOKEN_SEMICOLON, "; after client_max_body_size");
+                    ts.next();
+                } else {
+                    // Unknown directive, skip to next semicolon
+                    while (ts.peek().type != TOKEN_SEMICOLON && ts.peek().type != TOKEN_RBRACE && !ts.eof())
+                        ts.next();
+                    if (ts.peek().type == TOKEN_SEMICOLON)
+                        ts.next();
+                }
             } else {
-                // TODO: parse server directives
-                // For now, skip to next semicolon or brace
-                while (ts.peek().type != TOKEN_SEMICOLON && ts.peek().type != TOKEN_RBRACE && !ts.eof())
-                    ts.next();
-                if (ts.peek().type == TOKEN_SEMICOLON)
-                    ts.next();
+                // Skip non-word tokens (shouldn't happen in valid config)
+                ts.next();
             }
         }
         expect(ts, TOKEN_RBRACE, "'}' to close server block");
