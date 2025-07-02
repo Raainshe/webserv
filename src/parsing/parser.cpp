@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <cstdlib>
+#include <set>
 
 namespace {
     // Helper to advance and check tokens
@@ -45,31 +46,36 @@ namespace {
 
     LocationConfig parseLocation(TokenStream& ts) {
         LocationConfig loc;
-        // Expect: location <path> { ... }
+        bool seen_root = false, seen_autoindex = false, seen_upload_store = false, seen_cgi_pass = false;
+        std::set<std::string> seen_directives;
         expect(ts, TOKEN_WORD, "'location'");
         ts.next(); // 'location'
         expect(ts, TOKEN_WORD, "location path");
         loc.path = ts.next().value;
         expect(ts, TOKEN_LBRACE, "'{' after location path");
         ts.next(); // '{'
-        // Parse directives inside location block
         while (ts.peek().type != TOKEN_RBRACE && !ts.eof()) {
             if (ts.peek().type == TOKEN_WORD) {
                 std::string directive = ts.peek().value;
                 ts.next();
                 if (directive == "root") {
+                    if (seen_root) throw std::runtime_error("Duplicate 'root' directive in location block");
+                    seen_root = true;
                     expect(ts, TOKEN_WORD, "root value");
                     loc.root = ts.next().value;
                     expect(ts, TOKEN_SEMICOLON, "; after root");
                     ts.next();
                 } else if (directive == "index") {
-                    // index can have multiple values
+                    if (seen_directives.count("index")) throw std::runtime_error("Duplicate 'index' directive in location block");
+                    seen_directives.insert("index");
                     while (ts.peek().type == TOKEN_WORD) {
                         loc.index.push_back(ts.next().value);
                     }
                     expect(ts, TOKEN_SEMICOLON, "; after index");
                     ts.next();
                 } else if (directive == "autoindex") {
+                    if (seen_autoindex) throw std::runtime_error("Duplicate 'autoindex' directive in location block");
+                    seen_autoindex = true;
                     expect(ts, TOKEN_WORD, "autoindex value");
                     std::string val = ts.next().value;
                     if (isTrue(val)) loc.autoindex = true;
@@ -78,47 +84,53 @@ namespace {
                     expect(ts, TOKEN_SEMICOLON, "; after autoindex");
                     ts.next();
                 } else if (directive == "allow_methods") {
-                    // allow_methods can have multiple values
+                    if (seen_directives.count("allow_methods")) throw std::runtime_error("Duplicate 'allow_methods' directive in location block");
+                    seen_directives.insert("allow_methods");
                     while (ts.peek().type == TOKEN_WORD) {
                         loc.allow_methods.push_back(ts.next().value);
                     }
                     expect(ts, TOKEN_SEMICOLON, "; after allow_methods");
                     ts.next();
                 } else if (directive == "upload_store") {
+                    if (seen_upload_store) throw std::runtime_error("Duplicate 'upload_store' directive in location block");
+                    seen_upload_store = true;
                     expect(ts, TOKEN_WORD, "upload_store value");
                     loc.upload_store = ts.next().value;
                     expect(ts, TOKEN_SEMICOLON, "; after upload_store");
                     ts.next();
                 } else if (directive == "cgi_pass") {
+                    if (seen_cgi_pass) throw std::runtime_error("Duplicate 'cgi_pass' directive in location block");
+                    seen_cgi_pass = true;
                     expect(ts, TOKEN_WORD, "cgi_pass value");
                     loc.cgi_pass = ts.next().value;
                     expect(ts, TOKEN_SEMICOLON, "; after cgi_pass");
                     ts.next();
                 } else {
-                    // Unknown directive, skip to next semicolon
                     while (ts.peek().type != TOKEN_SEMICOLON && ts.peek().type != TOKEN_RBRACE && !ts.eof())
                         ts.next();
                     if (ts.peek().type == TOKEN_SEMICOLON)
                         ts.next();
                 }
             } else {
-                // Skip non-word tokens (shouldn't happen in valid config)
                 ts.next();
             }
         }
         expect(ts, TOKEN_RBRACE, "'}' to close location block");
         ts.next(); // '}'
+        // Required directive checks (example: root is required)
+        // Uncomment the next line if you want to require root in every location:
+        // if (!seen_root) throw std::runtime_error("Missing required 'root' directive in location block");
         return loc;
     }
 
     ServerConfig parseServer(TokenStream& ts) {
         ServerConfig srv;
-        // Expect: server { ... }
+        bool seen_listen = false, seen_server_name = false, seen_client_max_body_size = false;
+        std::set<std::string> seen_directives;
         expect(ts, TOKEN_WORD, "'server'");
         ts.next(); // 'server'
         expect(ts, TOKEN_LBRACE, "'{' after server");
         ts.next(); // '{'
-        // Parse directives inside server block
         while (ts.peek().type != TOKEN_RBRACE && !ts.eof()) {
             if (ts.peek().type == TOKEN_WORD && ts.peek().value == "location") {
                 LocationConfig loc = parseLocation(ts);
@@ -127,16 +139,21 @@ namespace {
                 std::string directive = ts.peek().value;
                 ts.next();
                 if (directive == "listen") {
+                    if (seen_listen) throw std::runtime_error("Duplicate 'listen' directive in server block");
+                    seen_listen = true;
                     expect(ts, TOKEN_WORD, "listen value");
                     srv.listen_port = std::atoi(ts.next().value.c_str());
                     expect(ts, TOKEN_SEMICOLON, "; after listen");
                     ts.next();
                 } else if (directive == "server_name") {
+                    if (seen_server_name) throw std::runtime_error("Duplicate 'server_name' directive in server block");
+                    seen_server_name = true;
                     expect(ts, TOKEN_WORD, "server_name value");
                     srv.server_name = ts.next().value;
                     expect(ts, TOKEN_SEMICOLON, "; after server_name");
                     ts.next();
                 } else if (directive == "error_page") {
+                    // error_page can appear multiple times
                     expect(ts, TOKEN_WORD, "error code");
                     int code = std::atoi(ts.next().value.c_str());
                     expect(ts, TOKEN_WORD, "error page path");
@@ -145,24 +162,28 @@ namespace {
                     expect(ts, TOKEN_SEMICOLON, "; after error_page");
                     ts.next();
                 } else if (directive == "client_max_body_size") {
+                    if (seen_client_max_body_size) throw std::runtime_error("Duplicate 'client_max_body_size' directive in server block");
+                    seen_client_max_body_size = true;
                     expect(ts, TOKEN_WORD, "client_max_body_size value");
                     srv.client_max_body_size = parseSizeWithSuffix(ts.next().value);
                     expect(ts, TOKEN_SEMICOLON, "; after client_max_body_size");
                     ts.next();
                 } else {
-                    // Unknown directive, skip to next semicolon
                     while (ts.peek().type != TOKEN_SEMICOLON && ts.peek().type != TOKEN_RBRACE && !ts.eof())
                         ts.next();
                     if (ts.peek().type == TOKEN_SEMICOLON)
                         ts.next();
                 }
             } else {
-                // Skip non-word tokens (shouldn't happen in valid config)
                 ts.next();
             }
         }
         expect(ts, TOKEN_RBRACE, "'}' to close server block");
         ts.next(); // '}'
+        // Required directive checks
+        if (!seen_listen) throw std::runtime_error("Missing required 'listen' directive in server block");
+        // Optionally require at least one location block:
+        // if (srv.locations.empty()) throw std::runtime_error("Server block must have at least one location block");
         return srv;
     }
 }

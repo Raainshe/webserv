@@ -60,6 +60,7 @@ fclean: clean
 	@rm -f $(NAME)
 	@rm -f test_tokenizer
 	@rm -f test_parser
+	@rm -f test_error_handling
 	# Add any new test binaries here to ensure they are cleaned
 	@echo "$(GREEN)Full clean completed!$(NC)"
 
@@ -102,4 +103,16 @@ test_parser: $(OUT_DIR) $(TEST_PARSER_OBJ)
 run_test_parser: test_parser
 	@./test_parser
 
-.PHONY: all clean fclean re debug help test_tokenizer run_test_tokenizer test_parser run_test_parser
+# Test target for error handling
+TEST_ERROR_HANDLING_SRC = src/parsing/test_error_handling.cpp src/parsing/parser.cpp src/parsing/tokenizer.cpp
+TEST_ERROR_HANDLING_OBJ = $(addprefix $(OUT_DIR)/, $(notdir $(TEST_ERROR_HANDLING_SRC:.cpp=.o)))
+
+test_error_handling: $(OUT_DIR) $(TEST_ERROR_HANDLING_OBJ)
+	@echo "$(YELLOW)Linking test_error_handling...$(NC)"
+	@$(CXX) $(CXXFLAGS) $(TEST_ERROR_HANDLING_OBJ) -o test_error_handling
+	@echo "$(GREEN)test_error_handling built successfully!$(NC)"
+
+run_test_error_handling: test_error_handling
+	@./test_error_handling
+
+.PHONY: all clean fclean re debug help test_tokenizer run_test_tokenizer test_parser run_test_parser test_error_handling run_test_error_handling
