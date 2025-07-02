@@ -33,7 +33,7 @@ void printServer(const ServerConfig& srv) {
 }
 
 int main() {
-    std::ifstream file("configs/default.conf");
+    std::ifstream file("configs/test.conf");
     if (!file) {
         std::cerr << "Failed to open config file." << std::endl;
         return 1;

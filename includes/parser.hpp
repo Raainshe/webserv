@@ -6,13 +6,14 @@
 /*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 15:14:44 by rmakoni           #+#    #+#             */
-/*   Updated: 2025/07/02 15:35:24 by rmakoni          ###   ########.fr       */
+/*   Updated: 2025/07/02 16:01:18 by rmakoni          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
+#include "structs/main_config.hpp"
 #include "webserv.hpp"
 #include "tokenizer.hpp"
 
