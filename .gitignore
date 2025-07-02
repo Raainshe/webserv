@@ -1,5 +1,6 @@
 # Prerequisites
 *.d
+*:Zone.Identifier
 
 # Compiled Object files
 *.slo
