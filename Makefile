@@ -59,6 +59,7 @@ fclean: clean
 	@echo "$(PURPLE)Removing $(NAME) and test binaries...$(NC)"
 	@rm -f $(NAME)
 	@rm -f test_tokenizer
+	@rm -f test_parser
 	# Add any new test binaries here to ensure they are cleaned
 	@echo "$(GREEN)Full clean completed!$(NC)"
 
@@ -89,4 +90,16 @@ $(OUT_DIR)/%.o: src/parsing/%.cpp | $(OUT_DIR)
 run_test_tokenizer: test_tokenizer
 	@./test_tokenizer
 
-.PHONY: all clean fclean re debug help test_tokenizer run_test_tokenizer
+# Test target for parser
+TEST_PARSER_SRC = src/parsing/test_parser.cpp src/parsing/parser.cpp src/parsing/tokenizer.cpp
+TEST_PARSER_OBJ = $(addprefix $(OUT_DIR)/, $(notdir $(TEST_PARSER_SRC:.cpp=.o)))
+
+test_parser: $(OUT_DIR) $(TEST_PARSER_OBJ)
+	@echo "$(YELLOW)Linking test_parser...$(NC)"
+	@$(CXX) $(CXXFLAGS) $(TEST_PARSER_OBJ) -o test_parser
+	@echo "$(GREEN)test_parser built successfully!$(NC)"
+
+run_test_parser: test_parser
+	@./test_parser
+
+.PHONY: all clean fclean re debug help test_tokenizer run_test_tokenizer test_parser run_test_parser
