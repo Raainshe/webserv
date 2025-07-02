@@ -1,26 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   webserv.cpp                                        :+:      :+:    :+:   */
+/*   conf.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/07/02 14:18:57 by rmakoni           #+#    #+#             */
-/*   Updated: 2025/07/02 14:35:27 by rmakoni          ###   ########.fr       */
+/*   Created: 2025/07/02 14:41:30 by rmakoni           #+#    #+#             */
+/*   Updated: 2025/07/02 14:41:53 by rmakoni          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#ifndef CONF_HPP
+#define CONF_HPP
+
 #include "webserv.hpp"
 
-int main(int argc, char **argv)
-{
-    
-    if (argc != 2)
-    {
-        std::cerr << "Usage: ./webserv <config_file>" << std::endl;
-        return 1;
-    }
-    std::string config_file = argv[1];
-    
-    return 0;
-}
+
+#endif

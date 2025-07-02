@@ -1,26 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   webserv.cpp                                        :+:      :+:    :+:   */
+/*   parsing.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/07/02 14:18:57 by rmakoni           #+#    #+#             */
-/*   Updated: 2025/07/02 14:35:27 by rmakoni          ###   ########.fr       */
+/*   Created: 2025/07/02 14:18:50 by rmakoni           #+#    #+#             */
+/*   Updated: 2025/07/02 14:37:06 by rmakoni          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.hpp"
 
-int main(int argc, char **argv)
+int parse_config(std::string config_file)
 {
-    
-    if (argc != 2)
+    //check if the file exists
+    if (!std::ifstream(config_file))
     {
-        std::cerr << "Usage: ./webserv <config_file>" << std::endl;
-        return 1;
+        std::cerr << "Error: Config file does not exist" << std::endl;
+        return (1);
     }
-    std::string config_file = argv[1];
-    
-    return 0;
+    //read the file
+    // std::ifstream file(config_file);
+    // std::string line;
 }
