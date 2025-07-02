@@ -1,32 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   webserv.hpp                                        :+:      :+:    :+:   */
+/*   parser.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/07/02 14:38:19 by rmakoni           #+#    #+#             */
-/*   Updated: 2025/07/02 15:17:52 by rmakoni          ###   ########.fr       */
+/*   Created: 2025/07/02 15:14:44 by rmakoni           #+#    #+#             */
+/*   Updated: 2025/07/02 15:14:49 by rmakoni          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef WEBSERV_HPP
-#define WEBSERV_HPP
+#define PARSER_HPP
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <vector>
-#include <map>
-#include <cstddef>
+#include "webserv.hpp"
+#include "tokenizer.hpp"
 
-#include "structs/location_config.hpp"
-#include "structs/server_config.hpp"
-#include "structs/main_config.hpp"
+// Parses a vector of tokens into a MainConfig object.
+// Throws std::runtime_error on syntax or semantic errors.
+MainConfig parseConfig(const std::vector<Token>& tokens);
 
-//parsing.cpp
-int parse_config(std::string config_file);
-
-
-#endif
+#endif // PARSER_HPP 
