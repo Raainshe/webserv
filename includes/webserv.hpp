@@ -6,7 +6,7 @@
 /*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 14:38:19 by rmakoni           #+#    #+#             */
-/*   Updated: 2025/07/02 16:00:26 by rmakoni          ###   ########.fr       */
+/*   Updated: 2025/07/02 17:27:19 by rmakoni          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@
 #include <stdexcept>
 #include <algorithm>
 #include <cstdlib>
+#include <set>
+
 
 //headers
 #include "tokenizer.hpp"

@@ -44,6 +44,36 @@ namespace {
         return static_cast<size_t>(val);
     }
 
+    // Value validation helpers
+    bool isValidPort(int port) {
+        return port >= 1 && port <= 65535;
+    }
+
+    bool isValidHttpMethod(const std::string& method) {
+        static const std::string valid_methods[] = {"GET", "POST", "DELETE", "PUT", "HEAD", "OPTIONS", "TRACE", "CONNECT"};
+        for (size_t i = 0; i < sizeof(valid_methods)/sizeof(valid_methods[0]); ++i) {
+            if (method == valid_methods[i]) return true;
+        }
+        return false;
+    }
+
+    bool isValidErrorCode(int code) {
+        return code >= 400 && code <= 599;
+    }
+
+    void validateHttpMethods(const std::vector<std::string>& methods) {
+        std::set<std::string> seen;
+        for (size_t i = 0; i < methods.size(); ++i) {
+            if (!isValidHttpMethod(methods[i])) {
+                throw std::runtime_error("Parse error: invalid HTTP method '" + methods[i] + "'");
+            }
+            if (seen.count(methods[i])) {
+                throw std::runtime_error("Parse error: duplicate HTTP method '" + methods[i] + "'");
+            }
+            seen.insert(methods[i]);
+        }
+    }
+
     LocationConfig parseLocation(TokenStream& ts) {
         LocationConfig loc;
         bool seen_root = false, seen_autoindex = false, seen_upload_store = false, seen_cgi_pass = false;
@@ -89,6 +119,7 @@ namespace {
                     while (ts.peek().type == TOKEN_WORD) {
                         loc.allow_methods.push_back(ts.next().value);
                     }
+                    validateHttpMethods(loc.allow_methods);
                     expect(ts, TOKEN_SEMICOLON, "; after allow_methods");
                     ts.next();
                 } else if (directive == "upload_store") {
@@ -117,9 +148,6 @@ namespace {
         }
         expect(ts, TOKEN_RBRACE, "'}' to close location block");
         ts.next(); // '}'
-        // Required directive checks (example: root is required)
-        // Uncomment the next line if you want to require root in every location:
-        // if (!seen_root) throw std::runtime_error("Missing required 'root' directive in location block");
         return loc;
     }
 
@@ -142,7 +170,11 @@ namespace {
                     if (seen_listen) throw std::runtime_error("Duplicate 'listen' directive in server block");
                     seen_listen = true;
                     expect(ts, TOKEN_WORD, "listen value");
-                    srv.listen_port = std::atoi(ts.next().value.c_str());
+                    int port = std::atoi(ts.next().value.c_str());
+                    if (!isValidPort(port)) {
+                        throw std::runtime_error("Parse error: invalid port number '" + ts.peek().value + "' (must be 1-65535)");
+                    }
+                    srv.listen_port = port;
                     expect(ts, TOKEN_SEMICOLON, "; after listen");
                     ts.next();
                 } else if (directive == "server_name") {
@@ -153,9 +185,11 @@ namespace {
                     expect(ts, TOKEN_SEMICOLON, "; after server_name");
                     ts.next();
                 } else if (directive == "error_page") {
-                    // error_page can appear multiple times
                     expect(ts, TOKEN_WORD, "error code");
                     int code = std::atoi(ts.next().value.c_str());
+                    if (!isValidErrorCode(code)) {
+                        throw std::runtime_error("Parse error: invalid error code '" + ts.peek().value + "' (must be 400-599)");
+                    }
                     expect(ts, TOKEN_WORD, "error page path");
                     std::string path = ts.next().value;
                     srv.error_pages[code] = path;
@@ -180,10 +214,7 @@ namespace {
         }
         expect(ts, TOKEN_RBRACE, "'}' to close server block");
         ts.next(); // '}'
-        // Required directive checks
         if (!seen_listen) throw std::runtime_error("Missing required 'listen' directive in server block");
-        // Optionally require at least one location block:
-        // if (srv.locations.empty()) throw std::runtime_error("Server block must have at least one location block");
         return srv;
     }
 }
