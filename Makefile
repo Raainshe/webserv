@@ -12,10 +12,19 @@ VPATH = $(SRC_SUBDIRS)
 
 # List all source files (just filenames, no paths)
 SRCS = \
-	webserv.cpp
+	webserv.cpp \
+	parsing/parser.cpp \
+	parsing/tokenizer.cpp \
+	parsing/parsing.cpp \
+	networking/socket_manager.cpp
 
 # Object files
-OBJS = $(addprefix $(OUT_DIR)/, $(SRCS:.cpp=.o))
+OBJS = \
+	$(OUT_DIR)/webserv.o \
+	$(OUT_DIR)/parsing/parser.o \
+	$(OUT_DIR)/parsing/tokenizer.o \
+	$(OUT_DIR)/parsing/parsing.o \
+	$(OUT_DIR)/networking/socket_manager.o
 
 # Compiler and flags
 CXX = c++
@@ -34,9 +43,19 @@ all: $(NAME)
 
 $(OUT_DIR):
 	@mkdir -p $(OUT_DIR)
-	@echo "$(BLUE)Created $(OUT_DIR) directory$(NC)"
+	@mkdir -p $(OUT_DIR)/parsing
+	@mkdir -p $(OUT_DIR)/networking
+	@echo "$(BLUE)Created $(OUT_DIR) directory structure$(NC)"
 
 $(OUT_DIR)/%.o: %.cpp | $(OUT_DIR)
+	@echo "$(CYAN)Compiling $<...$(NC)"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(OUT_DIR)/parsing/%.o: src/parsing/%.cpp | $(OUT_DIR)
+	@echo "$(CYAN)Compiling $<...$(NC)"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(OUT_DIR)/networking/%.o: src/networking/%.cpp | $(OUT_DIR)
 	@echo "$(CYAN)Compiling $<...$(NC)"
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 

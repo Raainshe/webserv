@@ -1,4 +1,4 @@
-#include "webserv.hpp"
+#include "webserv.hpp" // IWYU pragma: keep
 
 namespace {
     // Helper to advance and check tokens
