@@ -1,7 +1,5 @@
 #include "webserv.hpp"
 
-#include <fstream>
-#include <iostream>
 
 void printLocation(const LocationConfig& loc) {
     std::cout << "      path: '" << loc.path << "'\n";

@@ -40,3 +40,8 @@
 
 # debug information files
 *.dwo
+.vscode/
+.clangd
+compile_commands.json
+webserv
+.cache/

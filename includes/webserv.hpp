@@ -6,7 +6,7 @@
 /*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 14:38:19 by rmakoni           #+#    #+#             */
-/*   Updated: 2025/07/02 17:27:19 by rmakoni          ###   ########.fr       */
+/*   Updated: 2025/07/03 10:43:54 by rmakoni          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,6 @@
 //headers
 #include "tokenizer.hpp"
 #include "parser.hpp"
-#include "conf.hpp"
 
 //structs
 #include "structs/location_config.hpp"

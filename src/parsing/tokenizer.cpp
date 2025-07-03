@@ -1,5 +1,4 @@
 #include "webserv.hpp"
-#include "tokenizer.hpp"
 
 std::vector<Token> tokenize(const std::string& input) {
     std::vector<Token> tokens;
