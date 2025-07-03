@@ -6,7 +6,7 @@
 /*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/03 13:28:00 by rmakoni           #+#    #+#             */
-/*   Updated: 2025/07/03 13:36:11 by rmakoni          ###   ########.fr       */
+/*   Updated: 2025/07/03 13:43:34 by rmakoni          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,13 @@
 
 #include <vector>
 #include <map>
-#include <string>
+#include <string> // IWYU pragma: keep.
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <errno.h>
-#include <iostream>
+#include <errno.h>// IWYU pragma: keep.
+#include <iostream>// IWYU pragma: keep.
 #include "structs/server_config.hpp"
 
 class SocketManager {

@@ -1,4 +1,4 @@
-#include "webserv.hpp"
+#include "webserv.hpp" // IWYU pragma: keep.
 
 
 void testConfig(const std::string& config, const std::string& testName) {

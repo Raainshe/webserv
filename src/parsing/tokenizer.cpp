@@ -1,4 +1,4 @@
-#include "webserv.hpp"
+#include "webserv.hpp" // IWYU pragma: keep.
 
 std::vector<Token> tokenize(const std::string& input) {
     std::vector<Token> tokens;
