@@ -6,7 +6,7 @@
 /*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 14:38:19 by rmakoni           #+#    #+#             */
-/*   Updated: 2025/07/03 13:36:11 by rmakoni          ###   ########.fr       */
+/*   Updated: 2025/07/07 12:17:54 by rmakoni          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 #include <algorithm> // IWYU pragma: keep
 #include <cstdlib> // IWYU pragma: keep
 #include <set> // IWYU pragma: keep
+#include <cstring> // for strerror and memset
 
 
 //headers
@@ -37,7 +38,7 @@
 #include "structs/main_config.hpp" // IWYU pragma: keep
 
 //parsing.cpp
-int parse_config(std::string config_file);
+int parse_config(std::string config_file, std::vector<ServerConfig>& servers);
 
 
 #endif

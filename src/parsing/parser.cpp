@@ -1,16 +1,6 @@
 #include "webserv.hpp" // IWYU pragma: keep
 
 namespace {
-    // Helper to advance and check tokens
-    struct TokenStream {
-        const std::vector<Token>& tokens;
-        size_t pos;
-        TokenStream(const std::vector<Token>& t) : tokens(t), pos(0) {}
-        const Token& peek() const { return tokens[pos]; }
-        const Token& next() { return tokens[pos++]; }
-        bool eof() const { return tokens[pos].type == TOKEN_EOF; }
-    };
-
     void expect(TokenStream& ts, TokenType type, const std::string& msg) {
         if (ts.peek().type != type)
             throw std::runtime_error("Parse error: expected " + msg + ", got '" + ts.peek().value + "'");
@@ -148,6 +138,7 @@ namespace {
     ServerConfig parseServer(TokenStream& ts) {
         ServerConfig srv;
         bool seen_listen = false, seen_server_name = false, seen_client_max_body_size = false;
+        
         std::set<std::string> seen_directives;
         expect(ts, TOKEN_WORD, "'server'");
         ts.next(); // 'server'
