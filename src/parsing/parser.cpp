@@ -138,8 +138,8 @@ namespace {
     ServerConfig parseServer(TokenStream& ts) {
         ServerConfig srv;
         bool seen_listen = false, seen_server_name = false, seen_client_max_body_size = false;
-        
         std::set<std::string> seen_directives;
+        
         expect(ts, TOKEN_WORD, "'server'");
         ts.next(); // 'server'
         expect(ts, TOKEN_LBRACE, "'{' after server");
