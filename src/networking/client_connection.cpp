@@ -6,7 +6,7 @@
 /*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/07/09 12:31:28 by rmakoni          ###   ########.fr       */
+/*   Updated: 2025/07/10 13:30:42 by rmakoni          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,4 +69,12 @@ void ClientConnection::close_connection() {
         close(socket_fd);
         socket_fd = -1;
     }
+}
+
+HttpRequest& ClientConnection::get_http_request() {
+    return http_request;
+}
+
+const HttpRequest& ClientConnection::get_http_request() const {
+    return http_request;
 } 

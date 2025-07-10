@@ -18,7 +18,9 @@ SRCS = \
 	parsing/parsing.cpp \
 	networking/socket_manager.cpp \
 	networking/client_connection.cpp \
-	networking/event_loop.cpp
+	networking/event_loop.cpp \
+	http/http_request.cpp \
+	http/request_parser.cpp
 
 # Object files
 OBJS = \
@@ -28,7 +30,9 @@ OBJS = \
 	$(OUT_DIR)/parsing/parsing.o \
 	$(OUT_DIR)/networking/socket_manager.o \
 	$(OUT_DIR)/networking/client_connection.o \
-	$(OUT_DIR)/networking/event_loop.o
+	$(OUT_DIR)/networking/event_loop.o \
+	$(OUT_DIR)/http/http_request.o \
+	$(OUT_DIR)/http/request_parser.o
 
 # Compiler and flags
 CXX = c++
@@ -49,6 +53,7 @@ $(OUT_DIR):
 	@mkdir -p $(OUT_DIR)
 	@mkdir -p $(OUT_DIR)/parsing
 	@mkdir -p $(OUT_DIR)/networking
+	@mkdir -p $(OUT_DIR)/http
 	@echo "$(BLUE)Created $(OUT_DIR) directory structure$(NC)"
 
 $(OUT_DIR)/%.o: %.cpp | $(OUT_DIR)
@@ -60,6 +65,10 @@ $(OUT_DIR)/parsing/%.o: src/parsing/%.cpp | $(OUT_DIR)
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(OUT_DIR)/networking/%.o: src/networking/%.cpp | $(OUT_DIR)
+	@echo "$(CYAN)Compiling $<...$(NC)"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(OUT_DIR)/http/%.o: src/http/%.cpp | $(OUT_DIR)
 	@echo "$(CYAN)Compiling $<...$(NC)"
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 

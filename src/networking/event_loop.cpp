@@ -6,7 +6,7 @@
 /*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/07/10 10:33:56 by rmakoni          ###   ########.fr       */
+/*   Updated: 2025/07/10 13:31:17 by rmakoni          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,9 +151,40 @@ void EventLoop::handle_client_read(int client_fd) {
     // Append to client's buffer
     client->append_to_buffer(std::string(buffer, bytes_read));
     
-    // For now, just echo back the data (this will be replaced with HTTP handling)
-    client->set_state(WRITING);
-    update_poll_events(client_fd, POLLOUT);
+    // Parse HTTP request
+    HttpRequest& request = client->get_http_request();
+    if (!request_parser.parse_request(request, client->get_buffer())) {
+        // Parsing error occurred
+        if (request.has_error()) {
+            std::cout << "HTTP parsing error: " << request.get_error_code() 
+                      << " - " << request.get_error_message() << std::endl;
+        }
+        remove_client(client_fd);
+        return;
+    }
+    
+    // Check if request is complete
+    if (request.is_complete()) {
+        std::cout << "HTTP request completed: " << request.get_method() 
+                  << " " << request.get_uri() << std::endl;
+        
+        // TODO: Process the complete HTTP request (step 6 - HTTP Response Handling)
+        // For now, send a simple response
+        std::string response = "HTTP/1.1 200 OK\r\n";
+        response += "Content-Type: text/plain\r\n";
+        response += "Content-Length: 25\r\n";
+        response += "\r\n";
+        response += "HTTP Request Received!";
+        
+        client->clear_buffer();
+        client->append_to_buffer(response);
+        client->set_state(WRITING);
+        update_poll_events(client_fd, POLLOUT);
+        
+        // Reset parser for next request
+        request_parser.reset();
+        request.clear();
+    }
     
     std::cout << "Read " << bytes_read << " bytes from client " << client_fd << std::endl;
 }

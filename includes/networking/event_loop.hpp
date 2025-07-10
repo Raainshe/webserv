@@ -6,7 +6,7 @@
 /*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/07/09 12:31:37 by rmakoni          ###   ########.fr       */
+/*   Updated: 2025/07/10 13:30:55 by rmakoni          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 #include <cstring>
 #include "networking/socket_manager.hpp"
 #include "networking/client_connection.hpp"
+#include "http/request_parser.hpp"
 
 class EventLoop {
 private:
@@ -31,6 +32,7 @@ private:
     SocketManager& socket_manager;
     bool running;
     time_t timeout_seconds;
+    RequestParser request_parser;
     
     // Maximum buffer size for reading
     static const size_t MAX_BUFFER_SIZE = 8192;

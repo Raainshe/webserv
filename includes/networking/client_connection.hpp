@@ -6,7 +6,7 @@
 /*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/07/09 11:53:21 by rmakoni          ###   ########.fr       */
+/*   Updated: 2025/07/10 13:30:35 by rmakoni          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 
 #include <sys/time.h>
 #include <string>
+#include "http/http_request.hpp"
 
 enum ConnectionState {
     READING,
@@ -30,6 +31,7 @@ private:
     time_t last_activity;
     std::string buffer;
     int server_socket_fd; // Which server this client belongs to
+    HttpRequest http_request; // HTTP request being parsed
 
 public:
     ClientConnection(int fd, int server_fd);
@@ -51,6 +53,10 @@ public:
     // Utility
     bool is_timed_out(time_t timeout_seconds) const;
     void close_connection();
+    
+    // HTTP request access
+    HttpRequest& get_http_request();
+    const HttpRequest& get_http_request() const;
 };
 
 #endif // CLIENT_CONNECTION_HPP 
