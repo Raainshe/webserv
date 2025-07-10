@@ -6,7 +6,7 @@
 /*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 14:38:19 by rmakoni           #+#    #+#             */
-/*   Updated: 2025/07/07 12:17:54 by rmakoni          ###   ########.fr       */
+/*   Updated: 2025/07/09 12:02:45 by rmakoni          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,12 +25,19 @@
 #include <cstdlib> // IWYU pragma: keep
 #include <set> // IWYU pragma: keep
 #include <cstring> // for strerror and memset
+#include <unistd.h>
+#include <time.h> // IWYU pragma: keep#include <fcntl.h>
+#include <errno.h> // IWYU pragma: keep
+#include <algorithm>
+
 
 
 //headers
 #include "tokenizer.hpp" // IWYU pragma: keep
 #include "parser.hpp" // IWYU pragma: keep
 #include "networking/socket_manager.hpp" // IWYU pragma: keep
+#include "networking/client_connection.hpp" // IWYU pragma: keep
+#include "networking/event_loop.hpp" // IWYU pragma: keep
 
 //structs
 #include "structs/location_config.hpp" // IWYU pragma: keep

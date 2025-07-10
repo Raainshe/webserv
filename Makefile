@@ -16,7 +16,9 @@ SRCS = \
 	parsing/parser.cpp \
 	parsing/tokenizer.cpp \
 	parsing/parsing.cpp \
-	networking/socket_manager.cpp
+	networking/socket_manager.cpp \
+	networking/client_connection.cpp \
+	networking/event_loop.cpp
 
 # Object files
 OBJS = \
@@ -24,7 +26,9 @@ OBJS = \
 	$(OUT_DIR)/parsing/parser.o \
 	$(OUT_DIR)/parsing/tokenizer.o \
 	$(OUT_DIR)/parsing/parsing.o \
-	$(OUT_DIR)/networking/socket_manager.o
+	$(OUT_DIR)/networking/socket_manager.o \
+	$(OUT_DIR)/networking/client_connection.o \
+	$(OUT_DIR)/networking/event_loop.o
 
 # Compiler and flags
 CXX = c++

@@ -6,11 +6,19 @@
 /*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 14:18:57 by rmakoni           #+#    #+#             */
-/*   Updated: 2025/07/07 12:33:17 by rmakoni          ###   ########.fr       */
+/*   Updated: 2025/07/09 11:54:40 by rmakoni          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.hpp"
+#include "networking/event_loop.hpp"
+#include <signal.h>
+
+void signal_handler(int sig) {
+    (void)sig;
+    std::cout << "\nReceived SIGINT, shutting down..." << std::endl;
+    exit(0);
+}
 
 int main(int argc, char **argv)
 {
@@ -46,10 +54,18 @@ int main(int argc, char **argv)
     std::cout << "Server is listening on " << socket_manager.get_server_sockets().size() 
               << " socket(s)" << std::endl;
     
-    // TODO: Implement event loop
-    // For now, just keep the program running
-    std::cout << "Press Enter to exit..." << std::endl;
-    std::cin.get();
+    // Create and run event loop
+    EventLoop event_loop(socket_manager, 60); // 60 second timeout
+    
+    // Set up signal handling for graceful shutdown
+    signal(SIGINT, signal_handler);
+    
+    try {
+        event_loop.run();
+    } catch (const std::exception& e) {
+        std::cerr << "Event loop error: " << e.what() << std::endl;
+        return 1;
+    }
     
     return 0;
 }
