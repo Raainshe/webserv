@@ -1,33 +1,33 @@
 Webserv Project Workflow
 ========================
 
-1. Project Setup
-   - Create a clean directory structure (src/, include/, config/, etc.).
-   - Set up your Makefile to build the project and handle clean/fclean/re targets.
-   - Create basic main.cpp (already started) and header files.
+	1. Project Setup
+	- Create a clean directory structure (src/, include/, config/, etc.).
+	- Set up your Makefile to build the project and handle clean/fclean/re targets.
+	- Create basic main.cpp (already started) and header files.
 
-2. Configuration File Parsing
-   - Decide on a configuration file format (inspired by NGINX, as suggested).
-   - Implement a parser that reads and validates the configuration file.
-     - Parse server blocks, ports, hosts, server_names, error pages, routes, etc.
-   - Store configuration in appropriate C++ classes/structs.
+	2. Configuration File Parsing
+	- Decide on a configuration file format (inspired by NGINX, as suggested).
+	- Implement a parser that reads and validates the configuration file.
+		- Parse server blocks, ports, hosts, server_names, error pages, routes, etc.
+	- Store configuration in appropriate C++ classes/structs.
 
-3. Networking Basics
-   - Initialize sockets for each server/port defined in the config.
-   - Set sockets to non-blocking mode.
-   - Bind, listen, and prepare to accept connections.
+	3. Networking Basics
+	- Initialize sockets for each server/port defined in the config.
+	- Set sockets to non-blocking mode.
+	- Bind, listen, and prepare to accept connections.
 
-4. Event Loop (poll/select/epoll/kqueue)
-   - Implement a single event loop using poll() (or equivalent).
-   - Register all listening sockets and client sockets with poll().
-   - Handle new connections, reads, and writes through the event loop.
-   - Ensure all I/O is non-blocking and goes through poll().
+	4. Event Loop (poll/select/epoll/kqueue)
+	- Implement a single event loop using poll() (or equivalent).
+	- Register all listening sockets and client sockets with poll().
+	- Handle new connections, reads, and writes through the event loop.
+	- Ensure all I/O is non-blocking and goes through poll().
 
-5. HTTP Request Parsing
-   - Read data from client sockets and parse HTTP requests (GET, POST, DELETE).
-   - Handle request headers, body, and chunked encoding if needed.
+	5. HTTP Request Parsing
+	- Read data from client sockets and parse HTTP requests (GET, POST, DELETE).
+	- Handle request headers, body, and chunked encoding if needed.
 
-6. HTTP Response Handling
+6. HTTP Response Handling (Halime)
    - Generate correct HTTP responses (status codes, headers, body).
    - Serve static files from the configured root.
    - Implement default error pages.
@@ -46,9 +46,9 @@ Webserv Project Workflow
    - Support file uploads (multipart/form-data).
    - Save uploaded files to the configured directory.
 
-10. Multiple Servers/Ports
-    - Ensure the server can listen on multiple ports/hosts as per config.
-    - Correctly route requests to the appropriate server block.
+	10. Multiple Servers/Ports
+		- Ensure the server can listen on multiple ports/hosts as per config.
+		- Correctly route requests to the appropriate server block.
 
 11. Robustness and Error Handling
     - Handle all errors gracefully; the server should never crash.
