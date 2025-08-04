@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/04 15:27:01 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/04 18:09:42 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,18 +188,72 @@ void EventLoop::handle_client_read(int client_fd) {
     std::cout << "Selected server: " << server_config->server_name << " (port "
               << server_config->listen_port << ")" << std::endl;
 
-    // TODO: Process the complete HTTP request (step 6 - HTTP Response Handling)
-    // For now, send a simple response with server info
-    std::string response_body =
-        "Request handled by server: " + server_config->server_name + " (port " +
-        std::to_string(server_config->listen_port) + ")";
+    // Step 7: Routing and Methods - Route the request
+    RouteResult route_result = router.route_request(*server_config, request);
 
-    std::string response = "HTTP/1.1 200 OK\r\n";
-    response += "Content-Type: text/plain\r\n";
-    response +=
-        "Content-Length: " + std::to_string(response_body.length()) + "\r\n";
-    response += "\r\n";
-    response += response_body;
+    std::string response;
+
+    if (route_result.status == ROUTE_OK) {
+      // Successful routing
+      std::string response_body = "Route successful!\n";
+      response_body += "Server: " + server_config->server_name + " (port " +
+                       std::to_string(server_config->listen_port) + ")\n";
+      response_body +=
+          "Matched location: " + route_result.location->path + "\n";
+      response_body += "File path: " + route_result.file_path + "\n";
+      response_body += "Is directory: " +
+                       std::string(route_result.is_directory ? "yes" : "no") +
+                       "\n";
+      response_body +=
+          "Directory listing: " +
+          std::string(route_result.should_list_directory ? "enabled"
+                                                         : "disabled") +
+          "\n";
+      response_body += "CGI request: " +
+                       std::string(route_result.is_cgi_request ? "yes" : "no") +
+                       "\n";
+
+      response = "HTTP/1.1 200 OK\r\n";
+      response += "Content-Type: text/plain\r\n";
+      response +=
+          "Content-Length: " + std::to_string(response_body.length()) + "\r\n";
+      response += "\r\n";
+      response += response_body;
+    } else {
+      // Routing error - generate appropriate error response
+      std::string status_line;
+      std::string response_body;
+
+      switch (route_result.http_status_code) {
+      case 404:
+        status_line = "HTTP/1.1 404 Not Found\r\n";
+        response_body = "404 Not Found: " + route_result.error_message;
+        break;
+      case 405:
+        status_line = "HTTP/1.1 405 Method Not Allowed\r\n";
+        response_body = "405 Method Not Allowed: " + route_result.error_message;
+        break;
+      case 403:
+        status_line = "HTTP/1.1 403 Forbidden\r\n";
+        response_body = "403 Forbidden: " + route_result.error_message;
+        break;
+      default:
+        status_line = "HTTP/1.1 500 Internal Server Error\r\n";
+        response_body =
+            "500 Internal Server Error: " + route_result.error_message;
+        break;
+      }
+
+      response = status_line;
+      response += "Content-Type: text/plain\r\n";
+      response +=
+          "Content-Length: " + std::to_string(response_body.length()) + "\r\n";
+      response += "\r\n";
+      response += response_body;
+    }
+
+    // TODO: Step 6 - HTTP Response Handling will replace this with actual file
+    // serving
 
     client->clear_buffer();
     client->append_to_buffer(response);

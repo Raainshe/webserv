@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/04 15:27:02 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/04 18:09:43 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define EVENT_LOOP_HPP
 
 #include "http/request_parser.hpp"
+#include "http/routing.hpp"
 #include "networking/client_connection.hpp"
 #include "networking/socket_manager.hpp"
 #include <cstring>
@@ -32,6 +33,7 @@ private:
   bool running;
   time_t timeout_seconds;
   RequestParser request_parser;
+  Router router;
 
   // Maximum buffer size for reading
   static const size_t MAX_BUFFER_SIZE = 8192;

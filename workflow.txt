@@ -32,10 +32,10 @@ Webserv Project Workflow
    - Serve static files from the configured root.
    - Implement default error pages.
 
-7. Routing and Methods
-   - Match requests to routes as defined in the config.
-   - Enforce allowed HTTP methods per route.
-   - Implement redirections, directory listing, default files, etc.
+	7. Routing and Methods
+	- Match requests to routes as defined in the config.
+	- Enforce allowed HTTP methods per route.
+	- Implement redirections, directory listing, default files, etc.
 
 8. CGI Support
    - Detect when a request should be handled by a CGI script (e.g., .php).
