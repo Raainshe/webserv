@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   parsing.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
+/*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 14:18:50 by rmakoni           #+#    #+#             */
-/*   Updated: 2025/07/09 11:50:26 by rmakoni          ###   ########.fr       */
+/*   Updated: 2025/08/07 23:52:57 by hpehliva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "webserv.hpp"
+#include "../../includes/webserv.hpp"
 
 int parse_config(std::string config_file, std::vector<ServerConfig>& servers)
 {

@@ -20,7 +20,8 @@ SRCS = \
 	networking/client_connection.cpp \
 	networking/event_loop.cpp \
 	http/http_request.cpp \
-	http/request_parser.cpp
+	http/request_parser.cpp \
+	http/http_response_handling.cpp
 
 # Object files
 OBJS = \

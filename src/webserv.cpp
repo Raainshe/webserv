@@ -3,15 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
+/*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 14:18:57 by rmakoni           #+#    #+#             */
-/*   Updated: 2025/07/09 11:54:40 by rmakoni          ###   ########.fr       */
+/*   Updated: 2025/08/07 23:54:25 by hpehliva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "webserv.hpp"
-#include "networking/event_loop.hpp"
+#include "../includes/webserv.hpp"
+#include "../includes/networking/event_loop.hpp"
 #include <signal.h>
 
 void signal_handler(int sig) {

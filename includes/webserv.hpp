@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
+/*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 14:38:19 by rmakoni           #+#    #+#             */
-/*   Updated: 2025/07/09 12:02:45 by rmakoni          ###   ########.fr       */
+/*   Updated: 2025/08/07 23:54:02 by hpehliva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,10 @@
 #include "structs/location_config.hpp" // IWYU pragma: keep
 #include "structs/server_config.hpp" // IWYU pragma: keep
 #include "structs/main_config.hpp" // IWYU pragma: keep
+
+//parsing and tokenizing
+#include "parser.hpp" // IWYU pragma: keep
+#include "tokenizer.hpp" // IWYU pragma: keep
 
 //parsing.cpp
 int parse_config(std::string config_file, std::vector<ServerConfig>& servers);

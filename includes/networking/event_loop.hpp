@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   event_loop.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
+/*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/07/10 13:30:55 by rmakoni          ###   ########.fr       */
+/*   Updated: 2025/08/08 01:38:36 by hpehliva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,11 @@
 #include <unistd.h>
 #include <iostream> // IWYU pragma: keep
 #include <cstring>
-#include "networking/socket_manager.hpp"
-#include "networking/client_connection.hpp"
-#include "http/request_parser.hpp"
+#include "socket_manager.hpp"
+#include "client_connection.hpp"
+#include "../http/request_parser.hpp"
+#include "../http/http_request.hpp"
+#include "../http/http_response_handling.hpp"
 
 class EventLoop {
 private:

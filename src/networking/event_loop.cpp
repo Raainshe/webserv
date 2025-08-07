@@ -3,15 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   event_loop.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
+/*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/07/10 13:31:17 by rmakoni          ###   ########.fr       */
+/*   Updated: 2025/08/08 01:41:53 by hpehliva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
-#include "webserv.hpp" // IWYU pragma: keep
+#include "../../includes/networking/event_loop.hpp"
 
 EventLoop::EventLoop(SocketManager& sm, time_t timeout) 
     : socket_manager(sm), running(false), timeout_seconds(timeout) {
@@ -169,6 +169,10 @@ void EventLoop::handle_client_read(int client_fd) {
                   << " " << request.get_uri() << std::endl;
         
         // TODO: Process the complete HTTP request (step 6 - HTTP Response Handling)
+        const ServerConfig* config = socket_manager.get_config_for_socket(client->get_server_socket_fd());
+
+        HttpResponseHandling handler(config);
+        std::string response = handler.handle_request(request);
         // For now, send a simple response
         std::string response = "HTTP/1.1 200 OK\r\n";
         response += "Content-Type: text/plain\r\n";
