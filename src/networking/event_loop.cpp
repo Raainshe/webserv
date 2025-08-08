@@ -3,13 +3,12 @@
 /*                                                        :::      ::::::::   */
 /*   event_loop.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
+/*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/08 02:03:35 by hpehliva         ###   ########.fr       */
+/*   Updated: 2025/08/08 15:37:44 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
 
 #include "../../includes/networking/event_loop.hpp"
 #include "webserv.hpp" // IWYU pragma: keep
@@ -186,7 +185,7 @@ void EventLoop::handle_client_read(int client_fd) {
       request.clear();
       return;
     }
-    
+
     std::cout << "Selected server: " << server_config->server_name << " (port "
               << server_config->listen_port << ")" << std::endl;
 
@@ -252,32 +251,6 @@ void EventLoop::handle_client_read(int client_fd) {
           "Content-Length: " + std::to_string(response_body.length()) + "\r\n";
       response += "\r\n";
       response += response_body;
-    
-    // Check if request is complete
-    if (request.is_complete()) {
-        std::cout << "HTTP request completed: " << request.get_method() 
-                  << " " << request.get_uri() << std::endl;
-        
-        // TODO: Process the complete HTTP request (step 6 - HTTP Response Handling)
-        const ServerConfig* config = socket_manager.get_config_for_socket(client->get_server_socket_fd());
-
-        HttpResponseHandling handler(config);
-        std::string response = handler.handle_request(request);
-        // For now, send a simple response
-        // std::string response = "HTTP/1.1 200 OK\r\n";
-        response += "Content-Type: text/plain\r\n";
-        response += "Content-Length: 25\r\n";
-        response += "\r\n";
-        response += "HTTP Request Received!";
-        
-        client->clear_buffer();
-        client->append_to_buffer(response);
-        client->set_state(WRITING);
-        update_poll_events(client_fd, POLLOUT);
-        
-        // Reset parser for next request
-        request_parser.reset();
-        request.clear();
     }
 
     // TODO: Step 6 - HTTP Response Handling will replace this with actual file
