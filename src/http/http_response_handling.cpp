@@ -6,15 +6,17 @@
 /*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/08 00:12:38 by hpehliva          #+#    #+#             */
-/*   Updated: 2025/08/08 01:39:07 by hpehliva         ###   ########.fr       */
+/*   Updated: 2025/08/08 02:40:03 by hpehliva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/http/http_response_handling.hpp"
 #include "../../includes/webserv.hpp"
+#include <sys/stat.h>
 
-HttpResponseHandling::HttpResponseHandling(const ServerConfig* server_config) : server_config(server_config)
+HttpResponseHandling::HttpResponseHandling(const ServerConfig* server_config)
 {
+    (void)server_config; // Suppress unused parameter warning
 }
 
 HttpResponseHandling::~HttpResponseHandling()
@@ -37,17 +39,27 @@ std::string HttpResponseHandling::handle_request(const HttpRequest& request){
 }
 
 std::string HttpResponseHandling::handle_get_request(const HttpRequest& request){
-    std::string file_path = get_file_path(request.get_path());
-    if (!file_exists(file_path))
+    std::string uri = request.get_path();
+    std::string file_path = get_file_path(uri);
+
+    std::cout << "DEBUG" << std::endl;
+    std::cout << "file path: " << file_path << std::endl;
+    std::cout << "URI: " << uri << std::endl;
+    std::cout << "File exist: " << (file_exists(file_path) ? "true" : "false") << std::endl;
+    if (!file_exists(file_path)){
+        std::cout << "Returning 404 response" << std::endl;
         return build_error_response(404, "File not found");
-    if(is_directory(file_path))
-        return serve_directory(file_path, request.get_path());
+    }
+    if(is_directory(file_path)){
+        std::cout << "Returning 403 response" << std::endl;
+        return serve_directory(file_path, uri);
+    }
     
     return serve_file(file_path);
 }
 
 std::string HttpResponseHandling::handle_post_request(const HttpRequest& request){
-
+    (void)request;
     std::string body = "POST request received succsessfully!";
     return build_response(200, "text/plain", body);
 }
@@ -119,11 +131,18 @@ std::string HttpResponseHandling::build_error_response(int status_code, const st
 }
 
 std::string HttpResponseHandling::get_file_path(const std::string& uri){
-    std::string root = "/var/www";
-    if(server_config && !server_config->locations.empty()) {
-        root = server_config->locations[0].root;
-    }
-    std::string path = root + uri;
+    std::string root = "./www";
+    // if(server_config && !server_config->locations.empty()) {
+    //     root = server_config->locations[0].root;
+    // }
+    std::string path = root + uri; // Start with the root directory
+    // if(path[path.length() - 1] != '/' || uri[0] != '/')
+    //     path += "/";
+    // if(path[path.length() - 1] == '/' && uri[0] == '/')
+    //     path += path.substr(0,path.length() - 1); // Remove leading slash from uri
+    // path += uri;
+
+    std::cout << "DEBUG: get_file_path: " << path << std::endl;
     return path;
 }
 std::string HttpResponseHandling::get_mime_type(const std::string& file_path){

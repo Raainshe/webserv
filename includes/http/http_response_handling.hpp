@@ -6,7 +6,7 @@
 /*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/08 00:12:53 by hpehliva          #+#    #+#             */
-/*   Updated: 2025/08/08 00:31:31 by hpehliva         ###   ########.fr       */
+/*   Updated: 2025/08/08 02:40:14 by hpehliva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 
 class HttpResponseHandling {
 private:
-    const ServerConfig* server_config;
+    // const ServerConfig* server_config;
 
 public:
     HttpResponseHandling(const ServerConfig* server_config);

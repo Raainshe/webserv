@@ -33,7 +33,8 @@ OBJS = \
 	$(OUT_DIR)/networking/client_connection.o \
 	$(OUT_DIR)/networking/event_loop.o \
 	$(OUT_DIR)/http/http_request.o \
-	$(OUT_DIR)/http/request_parser.o
+	$(OUT_DIR)/http/request_parser.o \
+	$(OUT_DIR)/http/http_response_handling.o
 
 # Compiler and flags
 CXX = c++

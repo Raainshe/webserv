@@ -6,7 +6,7 @@
 /*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/08 01:41:53 by hpehliva         ###   ########.fr       */
+/*   Updated: 2025/08/08 02:03:35 by hpehliva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,7 +174,7 @@ void EventLoop::handle_client_read(int client_fd) {
         HttpResponseHandling handler(config);
         std::string response = handler.handle_request(request);
         // For now, send a simple response
-        std::string response = "HTTP/1.1 200 OK\r\n";
+        // std::string response = "HTTP/1.1 200 OK\r\n";
         response += "Content-Type: text/plain\r\n";
         response += "Content-Length: 25\r\n";
         response += "\r\n";
