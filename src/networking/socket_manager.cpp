@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   socket_manager.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
+/*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/03 13:28:00 by rmakoni           #+#    #+#             */
-/*   Updated: 2025/07/09 11:50:30 by rmakoni          ###   ########.fr       */
+/*   Updated: 2025/08/07 23:50:28 by hpehliva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "webserv.hpp" // IWYU pragma: keep
+#include "../../includes/networking/socket_manager.hpp"
 
 SocketManager::SocketManager() : initialized(false) {
 }

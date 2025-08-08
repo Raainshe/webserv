@@ -3,15 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   request_parser.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
+/*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/07/10 13:30:11 by rmakoni          ###   ########.fr       */
+/*   Updated: 2025/08/07 23:49:11 by hpehliva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
-#include "http/request_parser.hpp"
+#include "../../includes/http/request_parser.hpp"
 #include <cctype>
 #include <sstream>
 
