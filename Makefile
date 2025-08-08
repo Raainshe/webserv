@@ -21,6 +21,7 @@ SRCS = \
 	networking/event_loop.cpp \
 	http/http_request.cpp \
 	http/request_parser.cpp \
+	http/routing.cpp
 	http/http_response_handling.cpp
 
 # Object files
@@ -34,6 +35,7 @@ OBJS = \
 	$(OUT_DIR)/networking/event_loop.o \
 	$(OUT_DIR)/http/http_request.o \
 	$(OUT_DIR)/http/request_parser.o \
+	$(OUT_DIR)/http/routing.o
 	$(OUT_DIR)/http/http_response_handling.o
 
 # Compiler and flags
