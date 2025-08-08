@@ -5,7 +5,7 @@
 #include <vector>
 #include <map>
 #include <cstddef>
-#include "structs/location_config.hpp"
+#include "location_config.hpp"
 
 struct ServerConfig {
     int listen_port;

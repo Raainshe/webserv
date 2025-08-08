@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request_parser.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
+/*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/07/10 13:29:33 by rmakoni          ###   ########.fr       */
+/*   Updated: 2025/08/04 15:18:27 by hpehliva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #define REQUEST_PARSER_HPP
 
 #include <string>
-#include "http/http_request.hpp"
+#include "http_request.hpp"
 
 class RequestParser {
 private:

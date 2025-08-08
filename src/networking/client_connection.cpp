@@ -3,15 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   client_connection.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
+/*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/07/10 13:30:42 by rmakoni          ###   ########.fr       */
+/*   Updated: 2025/08/08 02:02:45 by hpehliva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
-#include "webserv.hpp" // IWYU pragma: keep
+#include "../../includes/networking/client_connection.hpp"
+#include "../../includes/http/http_request.hpp"
+#include "../../includes/http/http_response_handling.hpp"
+#include "../../includes/webserv.hpp"
 
 ClientConnection::ClientConnection(int fd, int server_fd) 
     : socket_fd(fd), state(READING), last_activity(time(NULL)), 
