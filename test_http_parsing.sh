@@ -38,7 +38,7 @@ fi
 # Test 3: DELETE request
 echo -e "\nTest 3: DELETE request"
 echo "Sending DELETE request..."
-RESPONSE=$(echo -e "DELETE /file.txt HTTP/1.1\r\nHost: localhost\r\n\r\n" | nc -w 5 localhost 8080 2>/dev/null)
+RESPONSE=$(echo -e "DELETE /images/photo1.jpg HTTP/1.1\r\nHost: localhost\r\n\r\n" | nc -N -w 5 localhost 8080 2>/dev/null)
 if [ $? -eq 0 ]; then
     echo "✓ DELETE request successful"
     echo "Response: ${RESPONSE:0:100}..."
@@ -49,7 +49,7 @@ fi
 # Test 4: Request with query string
 echo -e "\nTest 4: Request with query string"
 echo "Sending GET request with query parameters..."
-RESPONSE=$(echo -e "GET /search?q=test&page=1 HTTP/1.1\r\nHost: localhost\r\n\r\n" | nc -w 5 localhost 8080 2>/dev/null)
+RESPONSE=$(echo -e "GET /search?q=test&page=1 HTTP/1.1\r\nHost: localhost\r\n\r\n" | nc -N -w 5 localhost 8080 2>/dev/null)
 if [ $? -eq 0 ]; then
     echo "✓ Query string request successful"
     echo "Response: ${RESPONSE:0:100}..."
@@ -60,7 +60,7 @@ fi
 # Test 5: Request with multiple headers
 echo -e "\nTest 5: Request with multiple headers"
 echo "Sending request with various headers..."
-RESPONSE=$(echo -e "GET / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: TestClient/1.0\r\nAccept: text/html\r\nConnection: close\r\n\r\n" | nc -w 5 localhost 8080 2>/dev/null)
+RESPONSE=$(echo -e "GET / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: TestClient/1.0\r\nAccept: text/html\r\nConnection: close\r\n\r\n" | nc -N -w 5 localhost 8080 2>/dev/null)
 if [ $? -eq 0 ]; then
     echo "✓ Multiple headers request successful"
     echo "Response: ${RESPONSE:0:100}..."
@@ -71,7 +71,7 @@ fi
 # Test 6: Invalid request (should be handled gracefully)
 echo -e "\nTest 6: Invalid request handling"
 echo "Sending malformed request..."
-RESPONSE=$(echo -e "INVALID / HTTP/1.1\r\nHost: localhost\r\n\r\n" | nc -w 5 localhost 8080 2>/dev/null)
+RESPONSE=$(echo -e "INVALID / HTTP/1.1\r\nHost: localhost\r\n\r\n" | nc -N -w 5 localhost 8080 2>/dev/null)
 if [ $? -eq 0 ]; then
     echo "✓ Invalid request handled gracefully"
     echo "Response: ${RESPONSE:0:100}..."
@@ -100,4 +100,4 @@ echo "- Header parsing (case-insensitive)"
 echo "- URI and query string parsing"
 echo "- Content-Length body parsing"
 echo "- Error handling for malformed requests"
-echo "- RFC 2616 compliance" 
+echo "- RFC 2616 compliance"
