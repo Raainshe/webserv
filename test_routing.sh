@@ -143,7 +143,7 @@ verify_response_contains "Index of /images/" "$response"
 
 print_test "API location matching (directory without autoindex -> 403)" "curl -s -H 'Host: test.local' http://localhost:8081/api/"
 response=$(curl -s -H "Host: test.local" http://localhost:8081/api/)
-verify_status_code "403 Directory listing disabled" "$response"
+verify_response_contains "Custom 403 Page" "$response"
 
 print_test "Specific API endpoint" "curl -s -H 'Host: test.local' http://localhost:8081/api/users.json"
 response=$(curl -s -H "Host: test.local" http://localhost:8081/api/users.json)
@@ -163,7 +163,15 @@ verify_response_contains "POST request received successfully!" "$response"
 
 print_test "DELETE method not allowed (root)" "curl -s -X DELETE -H 'Host: localhost' http://localhost:8080/"
 response=$(curl -s -X DELETE -H "Host: localhost" http://localhost:8080/)
-verify_status_code "405 Method DELETE not allowed" "$response"
+verify_response_contains "Custom 405 Page" "$response"
+
+# =============================================================================
+# CLIENT MAX BODY SIZE (413)
+# =============================================================================
+
+print_test "POST over client_max_body_size triggers 413" "dd if=/dev/zero bs=1 count=2048 2>/dev/null | curl -s -X POST -H 'Host: localhost' -H 'Content-Length: 2048' --data-binary @- http://localhost:8080/"
+response=$(dd if=/dev/zero bs=1 count=2048 2>/dev/null | curl -s -X POST -H 'Host: localhost' -H 'Content-Length: 2048' --data-binary @- http://localhost:8080/)
+verify_response_contains "Custom 413 Page" "$response"
 
 print_test "GET method allowed (images)" "curl -s -X GET -H 'Host: localhost' http://localhost:8080/images/"
 response=$(curl -s -X GET -H "Host: localhost" http://localhost:8080/images/)
@@ -171,7 +179,7 @@ verify_response_contains "Index of /images/" "$response"
 
 print_test "POST method not allowed (images)" "curl -s -X POST -H 'Host: localhost' http://localhost:8080/images/"
 response=$(curl -s -X POST -H "Host: localhost" http://localhost:8080/images/)
-verify_status_code "405 Method POST not allowed" "$response"
+verify_response_contains "Custom 405 Page" "$response"
 
 print_test "DELETE method allowed (API)" "curl -s -X DELETE -H 'Host: test.local' http://localhost:8081/api/tmp_delete.json"
 echo '{"tmp":"delete"}' > test_files/api/tmp_delete.json
@@ -200,7 +208,7 @@ verify_response_contains "API endpoint working" "$response"
 
 print_test "CGI location detection (not implemented yet)" "curl -s -H 'Host: localhost' http://localhost:8080/cgi-bin/script.php"
 response=$(curl -s -H "Host: localhost" http://localhost:8080/cgi-bin/script.php)
-verify_status_code "404 Not Found" "$response"
+verify_response_contains "Custom 404 Page" "$response"
 
 # =============================================================================
 # ERROR CASES
@@ -208,11 +216,11 @@ verify_status_code "404 Not Found" "$response"
 
 print_test "Non-existent file" "curl -s -H 'Host: localhost' http://localhost:8080/nonexistent.html"
 response=$(curl -s -H "Host: localhost" http://localhost:8080/nonexistent.html)
-verify_status_code "404 Not Found" "$response"
+verify_response_contains "Custom 404 Page" "$response"
 
 print_test "Non-matching location (falls back to root, unresolved -> 404)" "curl -s -H 'Host: localhost' http://localhost:8080/unknown/path"
 response=$(curl -s -H "Host: localhost" http://localhost:8080/unknown/path)
-verify_status_code "404 Not Found" "$response"
+verify_response_contains "Custom 404 Page" "$response"
 
 # =============================================================================
 # LONGEST PREFIX MATCHING
@@ -224,7 +232,7 @@ verify_response_contains "Image file 1" "$response"
 
 print_test "Root fallback for unmatched paths" "curl -s -H 'Host: localhost' http://localhost:8080/other/path"
 response=$(curl -s -H "Host: localhost" http://localhost:8080/other/path)
-verify_status_code "404 Not Found" "$response"
+verify_response_contains "Custom 404 Page" "$response"
 
 # Show some debug output
 echo -e "${CYAN}Recent Server Log Output (Routing Decisions):${NC}"

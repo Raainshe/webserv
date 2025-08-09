@@ -136,7 +136,7 @@ verify_response "Welcome to localhost server!" "$response"
 # Test 6: Different path on first server
 print_test "Different path on first server" "curl -s -H 'Host: localhost' http://localhost:8080/test/path"
 response=$(curl -s -H "Host: localhost" http://localhost:8080/test/path)
-verify_response "404 Not Found" "$response"
+verify_response "Custom 404 Page" "$response"
 
 # Test 7: Different path on second server
 print_test "Different path on second server" "curl -s -H 'Host: test.local' http://localhost:8081/api/endpoint"
@@ -175,7 +175,30 @@ echo -e "${YELLOW}========================${NC}"
 tail -20 webserv.log | grep -E "(Host header|Selected server|HTTP request completed)" | tail -10
 echo
 
-# Summary
+# ========================= Same Port Suite =========================
+
+echo -e "\n${CYAN}=================================${NC}"
+echo -e "${CYAN} Same Port Server Selection Test ${NC}"
+echo -e "${CYAN}=================================${NC}"
+
+# Restart server with same-port config
+stop_webserver
+CONFIG_FILE="configs/test_same_port.conf"
+start_webserver
+
+print_test "Same port: Host header matches first server (localhost)" "curl -s -H 'Host: localhost' http://localhost:8080/"
+response=$(curl -s -H "Host: localhost" http://localhost:8080/)
+verify_response "Welcome to localhost server!" "$response"
+
+print_test "Same port: Host header matches second server (test.local)" "curl -s -H 'Host: test.local' http://localhost:8080/"
+response=$(curl -s -H "Host: test.local" http://localhost:8080/)
+verify_response "Welcome to test.local server!" "$response"
+
+print_test "Same port: No Host header uses default (first)" "curl -s http://localhost:8080/"
+response=$(curl -s http://localhost:8080/)
+verify_response "Welcome to localhost server!" "$response"
+
+# Final Summary
 echo -e "${CYAN}=================================${NC}"
 echo -e "${CYAN}         Test Summary            ${NC}"
 echo -e "${CYAN}=================================${NC}"

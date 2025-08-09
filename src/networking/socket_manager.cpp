@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/03 13:28:00 by rmakoni           #+#    #+#             */
-/*   Updated: 2025/08/09 12:16:41 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/09 16:36:18 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,12 +27,27 @@ bool SocketManager::initialize_sockets(
 
   bool all_success = true;
 
+  std::set<int> opened_ports;
   for (std::vector<ServerConfig>::const_iterator it = servers.begin();
        it != servers.end(); ++it) {
-    if (!setup_server_socket(*it)) {
-      std::cerr << "Failed to setup socket for server on port "
-                << it->listen_port << std::endl;
-      all_success = false;
+    int port = it->listen_port;
+    if (opened_ports.count(port) == 0) {
+      if (!setup_server_socket(*it)) {
+        std::cerr << "Failed to setup socket for server on port " << port
+                  << std::endl;
+        all_success = false;
+        continue;
+      }
+      opened_ports.insert(port);
+      int fd = server_sockets.back();
+      port_to_socket_fd[port] = fd;
+    }
+    // Find socket fd for this port and append server config to its list
+    int fd_for_port = port_to_socket_fd[port];
+    socket_to_server_list[fd_for_port].push_back(*it);
+    // Also set base config for fd if not set
+    if (socket_to_config.find(fd_for_port) == socket_to_config.end()) {
+      socket_to_config[fd_for_port] = *it;
     }
   }
 
@@ -56,6 +71,23 @@ const ServerConfig *SocketManager::get_config_for_socket(int socket_fd) const {
     return &(it->second);
   }
   return NULL;
+}
+
+const std::vector<ServerConfig> *
+SocketManager::get_servers_for_socket(int socket_fd) const {
+  std::map<int, std::vector<ServerConfig>>::const_iterator it =
+      socket_to_server_list.find(socket_fd);
+  if (it != socket_to_server_list.end()) {
+    return &(it->second);
+  }
+  return NULL;
+}
+
+int SocketManager::get_socket_fd_for_port(int port) const {
+  std::map<int, int>::const_iterator it = port_to_socket_fd.find(port);
+  if (it != port_to_socket_fd.end())
+    return it->second;
+  return -1;
 }
 
 void SocketManager::close_all_sockets() {
@@ -106,9 +138,8 @@ bool SocketManager::setup_server_socket(const ServerConfig &server) {
     return false;
   }
 
-  // Store socket and configuration
+  // Store socket
   server_sockets.push_back(socket_fd);
-  socket_to_config[socket_fd] = server;
 
   std::cout << "Server socket created and listening on port "
             << server.listen_port << " (fd: " << socket_fd << ")" << std::endl;

@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/08 00:12:38 by hpehliva          #+#    #+#             */
-/*   Updated: 2025/08/09 12:48:10 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/09 14:31:51 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,6 +136,15 @@ HttpResponseHandling::build_response(int status_code,
 std::string
 HttpResponseHandling::build_error_response(int status_code,
                                            const std::string &message) {
+  // Try custom error page from server config
+  std::string custom_path = resolve_error_page_path(status_code);
+  if (!custom_path.empty() && file_exists(custom_path) &&
+      !is_directory(custom_path)) {
+    std::string content = read_file(custom_path);
+    return build_response(status_code, "text/html", content);
+  }
+
+  // Fallback generic page
   std::ostringstream body;
   body << "<!DOCTYPE html>\n";
   body << "<html><head><title>" << status_code << " " << message
@@ -208,4 +217,77 @@ std::string HttpResponseHandling::read_file(const std::string &path) {
   std::ostringstream buffer;
   buffer << file.rdbuf();
   return buffer.str();
+}
+
+// Resolve configured error page path against server locations
+std::string HttpResponseHandling::resolve_error_page_path(int status_code) {
+  if (!server_config)
+    return "";
+  std::map<int, std::string>::const_iterator it =
+      server_config->error_pages.find(status_code);
+  if (it == server_config->error_pages.end())
+    return "";
+
+  const std::string &uri = it->second; // e.g. "/404.html" or "/errors/404.html"
+  const LocationConfig *loc = find_best_location_for_uri(uri);
+  if (!loc)
+    return "";
+
+  // Build relative part after location path
+  std::string relative = uri;
+  if (uri.size() >= loc->path.size() &&
+      uri.substr(0, loc->path.size()) == loc->path) {
+    relative = uri.substr(loc->path.size());
+  }
+  return join_paths(loc->root, relative);
+}
+
+const LocationConfig *
+HttpResponseHandling::find_best_location_for_uri(const std::string &uri) {
+  if (!server_config)
+    return NULL;
+  const LocationConfig *best = NULL;
+  size_t best_len = 0;
+  for (std::vector<LocationConfig>::const_iterator it =
+           server_config->locations.begin();
+       it != server_config->locations.end(); ++it) {
+    const std::string &p = it->path;
+    if (uri.size() >= p.size() && uri.substr(0, p.size()) == p) {
+      bool valid = false;
+      if (uri.size() == p.size())
+        valid = true;
+      else if (!p.empty() && p[p.size() - 1] == '/')
+        valid = true;
+      else if (uri[p.size()] == '/')
+        valid = true;
+      if (valid && p.size() > best_len) {
+        best = &(*it);
+        best_len = p.size();
+      }
+    }
+  }
+  // If no match, try root location "/" if present
+  if (!best) {
+    for (std::vector<LocationConfig>::const_iterator it =
+             server_config->locations.begin();
+         it != server_config->locations.end(); ++it) {
+      if (it->path == "/") {
+        best = &(*it);
+        break;
+      }
+    }
+  }
+  return best;
+}
+
+std::string HttpResponseHandling::join_paths(const std::string &root,
+                                             const std::string &path) {
+  std::string result = root;
+  if (!result.empty() && result[result.size() - 1] != '/')
+    result += "/";
+  std::string rel = path;
+  if (!rel.empty() && rel[0] == '/')
+    rel = rel.substr(1);
+  result += rel;
+  return result;
 }
