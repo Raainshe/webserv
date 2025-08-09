@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/08 00:12:53 by hpehliva          #+#    #+#             */
-/*   Updated: 2025/08/09 12:47:57 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/09 14:31:51 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,5 +54,10 @@ private:
   bool file_exists(const std::string &path);
   bool is_directory(const std::string &path);
   std::string read_file(const std::string &path);
+
+  // Error page helpers
+  std::string resolve_error_page_path(int status_code);
+  const LocationConfig *find_best_location_for_uri(const std::string &uri);
+  std::string join_paths(const std::string &root, const std::string &path);
 };
 #endif
