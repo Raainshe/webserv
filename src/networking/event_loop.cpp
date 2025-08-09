@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/09 12:48:02 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/09 16:16:35 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,6 +162,48 @@ void EventLoop::handle_client_read(int client_fd) {
     return;
   }
 
+  // Enforce client_max_body_size early (when headers parsed and entering body)
+  if (request.get_state() == PARSING_BODY) {
+    const ServerConfig *server_config_for_limit =
+        select_server_config(client, request);
+    if (server_config_for_limit) {
+      size_t limit = server_config_for_limit->client_max_body_size;
+      size_t content_length = request.get_content_length();
+      if (content_length == 0) {
+        std::string cl_hdr = request.get_header("content-length");
+        if (!cl_hdr.empty()) {
+          content_length =
+              static_cast<size_t>(std::strtoul(cl_hdr.c_str(), NULL, 10));
+        }
+      }
+      if (content_length > 0 && limit > 0 && content_length > limit) {
+        HttpResponseHandling responder(server_config_for_limit);
+        std::string resp =
+            responder.build_error_response(413, "Payload Too Large");
+        client->clear_buffer();
+        client->append_to_buffer(resp);
+        client->set_state(WRITING);
+        update_poll_events(client_fd, POLLOUT);
+        request_parser.reset();
+        request.clear();
+        return;
+      }
+      // Safety: if body grows beyond limit (for future non-length cases)
+      if (limit > 0 && request.get_body().size() > limit) {
+        HttpResponseHandling responder(server_config_for_limit);
+        std::string resp =
+            responder.build_error_response(413, "Payload Too Large");
+        client->clear_buffer();
+        client->append_to_buffer(resp);
+        client->set_state(WRITING);
+        update_poll_events(client_fd, POLLOUT);
+        request_parser.reset();
+        request.clear();
+        return;
+      }
+    }
+  }
+
   // Check if request is complete
   if (request.is_complete()) {
     std::cout << "HTTP request completed: " << request.get_method() << " "
@@ -189,6 +231,32 @@ void EventLoop::handle_client_read(int client_fd) {
 
     std::cout << "Selected server: " << server_config->server_name << " (port "
               << server_config->listen_port << ")" << std::endl;
+
+    // Enforce client_max_body_size on completed requests as well
+    size_t limit = server_config->client_max_body_size;
+    size_t content_length = request.get_content_length();
+    if (content_length == 0) {
+      std::string cl_hdr = request.get_header("content-length");
+      if (!cl_hdr.empty()) {
+        content_length =
+            static_cast<size_t>(std::strtoul(cl_hdr.c_str(), NULL, 10));
+      }
+    }
+    if ((limit > 0 && content_length > limit) ||
+        (limit > 0 && request.get_body().size() > limit)) {
+      HttpResponseHandling responder(server_config);
+      std::string resp =
+          responder.build_error_response(413, "Payload Too Large");
+
+      client->clear_buffer();
+      client->append_to_buffer(resp);
+      client->set_state(WRITING);
+      update_poll_events(client_fd, POLLOUT);
+
+      request_parser.reset();
+      request.clear();
+      return;
+    }
 
     // Step 7: Routing and Methods - Route the request
     RouteResult route_result = router.route_request(*server_config, request);

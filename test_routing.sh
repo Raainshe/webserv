@@ -165,6 +165,14 @@ print_test "DELETE method not allowed (root)" "curl -s -X DELETE -H 'Host: local
 response=$(curl -s -X DELETE -H "Host: localhost" http://localhost:8080/)
 verify_response_contains "Custom 405 Page" "$response"
 
+# =============================================================================
+# CLIENT MAX BODY SIZE (413)
+# =============================================================================
+
+print_test "POST over client_max_body_size triggers 413" "dd if=/dev/zero bs=1 count=2048 2>/dev/null | curl -s -X POST -H 'Host: localhost' -H 'Content-Length: 2048' --data-binary @- http://localhost:8080/"
+response=$(dd if=/dev/zero bs=1 count=2048 2>/dev/null | curl -s -X POST -H 'Host: localhost' -H 'Content-Length: 2048' --data-binary @- http://localhost:8080/)
+verify_response_contains "Custom 413 Page" "$response"
+
 print_test "GET method allowed (images)" "curl -s -X GET -H 'Host: localhost' http://localhost:8080/images/"
 response=$(curl -s -X GET -H "Host: localhost" http://localhost:8080/images/)
 verify_response_contains "Index of /images/" "$response"
