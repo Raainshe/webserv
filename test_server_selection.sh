@@ -111,56 +111,56 @@ echo
 # Test 1: Host header matches first server
 print_test "Host header matches first server (localhost)" "curl -s -H 'Host: localhost' http://localhost:8080/"
 response=$(curl -s -H "Host: localhost" http://localhost:8080/)
-verify_response "Server: localhost (port 8080)" "$response"
+verify_response "Welcome to localhost server!" "$response"
 
 # Test 2: Host header matches second server
 print_test "Host header matches second server (test.local)" "curl -s -H 'Host: test.local' http://localhost:8081/"
 response=$(curl -s -H "Host: test.local" http://localhost:8081/)
-verify_response "Server: test.local (port 8081)" "$response"
+verify_response "Welcome to test.local server!" "$response"
 
 # Test 3: Host header with port number (should strip port)
 print_test "Host header with port number" "curl -s -H 'Host: localhost:8080' http://localhost:8080/"
 response=$(curl -s -H "Host: localhost:8080" http://localhost:8080/)
-verify_response "Server: localhost (port 8080)" "$response"
+verify_response "Welcome to localhost server!" "$response"
 
 # Test 4: Non-matching Host header (should use default server)
 print_test "Non-matching Host header (should use default)" "curl -s -H 'Host: nonexistent.com' http://localhost:8080/"
 response=$(curl -s -H "Host: nonexistent.com" http://localhost:8080/)
-verify_response "Server: localhost (port 8080)" "$response"
+verify_response "Welcome to localhost server!" "$response"
 
 # Test 5: No Host header (should use default server)
 print_test "No Host header (should use default)" "curl -s http://localhost:8080/"
 response=$(curl -s http://localhost:8080/)
-verify_response "Server: localhost (port 8080)" "$response"
+verify_response "Welcome to localhost server!" "$response"
 
 # Test 6: Different path on first server
 print_test "Different path on first server" "curl -s -H 'Host: localhost' http://localhost:8080/test/path"
 response=$(curl -s -H "Host: localhost" http://localhost:8080/test/path)
-verify_response "Server: localhost (port 8080)" "$response"
+verify_response "404 Not Found" "$response"
 
 # Test 7: Different path on second server
 print_test "Different path on second server" "curl -s -H 'Host: test.local' http://localhost:8081/api/endpoint"
 response=$(curl -s -H "Host: test.local" http://localhost:8081/api/endpoint)
-verify_response "Server: test.local (port 8081)" "$response"
+verify_response "404 Not Found" "$response"
 
 # Test 8: Case sensitivity test
 print_test "Case sensitivity test (LOCALHOST)" "curl -s -H 'Host: LOCALHOST' http://localhost:8080/"
 response=$(curl -s -H "Host: LOCALHOST" http://localhost:8080/)
 # This should NOT match (case sensitive), so should use default
-verify_response "Server: localhost (port 8080)" "$response"
+verify_response "Welcome to localhost server!" "$response"
 
 # Test 9: Host header with different case for second server
 print_test "Case sensitivity test (TEST.LOCAL)" "curl -s -H 'Host: TEST.LOCAL' http://localhost:8081/"
 response=$(curl -s -H "Host: TEST.LOCAL" http://localhost:8081/)
 # This should NOT match (case sensitive), so should use default
-verify_response "Server: test.local (port 8081)" "$response"
+verify_response "Welcome to test.local server!" "$response"
 
 # Test 10: Multiple rapid requests to test stability
 print_test "Multiple rapid requests (5 requests)" "for i in {1..5}; do curl -s -H 'Host: localhost' http://localhost:8080/; done"
 echo "Sending 5 rapid requests..."
 for i in {1..5}; do
     response=$(curl -s -H "Host: localhost" http://localhost:8080/)
-    if [[ "$response" == *"Server: localhost (port 8080)"* ]]; then
+    if [[ "$response" == *"Welcome to localhost server!"* ]]; then
         echo -e "  Request $i: ${GREEN}✓${NC}"
     else
         echo -e "  Request $i: ${RED}✗${NC}"

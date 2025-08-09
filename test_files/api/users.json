@@ -1,1 +1,4 @@
-{"message": "API endpoint working", "data": "users list"}
+{
+	"message": "API endpoint working",
+	"data": "users list"
+}

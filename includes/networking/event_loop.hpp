@@ -3,34 +3,26 @@
 /*                                                        :::      ::::::::   */
 /*   event_loop.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
+/*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/08 01:38:36 by hpehliva         ###   ########.fr       */
+/*   Updated: 2025/08/09 12:48:01 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef EVENT_LOOP_HPP
 #define EVENT_LOOP_HPP
 
-#include "http/request_parser.hpp"
-#include "http/routing.hpp"
-#include "networking/client_connection.hpp"
-#include "networking/socket_manager.hpp"
+#include "../http/request_parser.hpp"
+#include "../http/routing.hpp"
+#include "client_connection.hpp"
+#include "socket_manager.hpp"
 #include <cstring>
-#include <iostream> // IWYU pragma: keep
 #include <map>
 #include <poll.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <vector>
-#include <iostream> // IWYU pragma: keep
-#include <cstring>
-#include "socket_manager.hpp"
-#include "client_connection.hpp"
-#include "../http/request_parser.hpp"
-#include "../http/http_request.hpp"
-#include "../http/http_response_handling.hpp"
 
 class EventLoop {
 private:
@@ -41,6 +33,7 @@ private:
   time_t timeout_seconds;
   RequestParser request_parser;
   Router router;
+  // Response builder (constructed per-request in .cpp as it depends on server)
 
   // Maximum buffer size for reading
   static const size_t MAX_BUFFER_SIZE = 8192;

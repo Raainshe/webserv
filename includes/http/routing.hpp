@@ -6,16 +6,16 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 15:45:00 by ksinn             #+#    #+#             */
-/*   Updated: 2025/08/04 18:09:43 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/09 12:47:59 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef ROUTING_HPP
 #define ROUTING_HPP
 
-#include "http/http_request.hpp"
-#include "structs/location_config.hpp"
-#include "structs/server_config.hpp"
+#include "../structs/location_config.hpp"
+#include "../structs/server_config.hpp"
+#include "http_request.hpp"
 #include <string>
 
 enum RouteStatus {
