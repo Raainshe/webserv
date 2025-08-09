@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/09 16:16:35 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/09 16:30:14 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -446,21 +446,23 @@ EventLoop::select_server_config(ClientConnection *client,
     hostname = hostname.substr(0, colon_pos);
   }
 
-  // TODO: In a complete implementation, we would check all servers on the same
-  // port For now, we'll check if the hostname matches the current server's
-  // server_name
-  if (hostname == base_config->server_name) {
-    std::cout << "Host header '" << hostname << "' matches server_name '"
-              << base_config->server_name << "'" << std::endl;
-    return base_config;
+  // Search all servers bound to this socket for a matching server_name
+  const std::vector<ServerConfig> *servers_on_socket =
+      socket_manager.get_servers_for_socket(server_socket_fd);
+  if (servers_on_socket) {
+    for (std::vector<ServerConfig>::const_iterator it =
+             servers_on_socket->begin();
+         it != servers_on_socket->end(); ++it) {
+      if (it->server_name == hostname) {
+        std::cout << "Host header '" << hostname << "' matches server_name '"
+                  << it->server_name << "'" << std::endl;
+        return &(*it);
+      }
+    }
   }
-
-  // TODO: Future enhancement - search all servers listening on the same port
-  // and return the one with matching server_name
-
   // No match found - use default server (first server for this port)
-  std::cout << "Host header '" << hostname << "' does not match server_name '"
-            << base_config->server_name << "', using default server"
-            << std::endl;
+  std::cout << "Host header '" << hostname
+            << "' did not match any server on this port, using default: "
+            << base_config->server_name << std::endl;
   return base_config;
 }
