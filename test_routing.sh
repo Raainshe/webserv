@@ -163,7 +163,7 @@ verify_response_contains "POST request received successfully!" "$response"
 
 print_test "DELETE method not allowed (root)" "curl -s -X DELETE -H 'Host: localhost' http://localhost:8080/"
 response=$(curl -s -X DELETE -H "Host: localhost" http://localhost:8080/)
-verify_status_code "405 Method DELETE not allowed" "$response"
+verify_response_contains "Custom 405 Page" "$response"
 
 print_test "GET method allowed (images)" "curl -s -X GET -H 'Host: localhost' http://localhost:8080/images/"
 response=$(curl -s -X GET -H "Host: localhost" http://localhost:8080/images/)
@@ -171,7 +171,7 @@ verify_response_contains "Index of /images/" "$response"
 
 print_test "POST method not allowed (images)" "curl -s -X POST -H 'Host: localhost' http://localhost:8080/images/"
 response=$(curl -s -X POST -H "Host: localhost" http://localhost:8080/images/)
-verify_status_code "405 Method POST not allowed" "$response"
+verify_response_contains "Custom 405 Page" "$response"
 
 print_test "DELETE method allowed (API)" "curl -s -X DELETE -H 'Host: test.local' http://localhost:8081/api/tmp_delete.json"
 echo '{"tmp":"delete"}' > test_files/api/tmp_delete.json
