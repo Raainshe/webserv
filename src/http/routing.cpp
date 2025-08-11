@@ -6,12 +6,11 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 15:45:00 by ksinn             #+#    #+#             */
-/*   Updated: 2025/08/04 18:09:42 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/11 16:02:10 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "http/routing.hpp"
-#include <algorithm>
+#include "../../includes/http/routing.hpp"
 #include <iostream>
 #include <sys/stat.h>
 
@@ -38,6 +37,23 @@ RouteResult Router::route_request(const ServerConfig &server,
   std::cout << "Matched location: " << location->path
             << " (root: " << location->root << ")" << std::endl;
 
+  // Redirect handling: if location defines a return 3xx, short-circuit
+  if (location->return_code >= 300 && location->return_code <= 399 &&
+      !location->return_url.empty()) {
+    RouteResult rr;
+    rr.status = ROUTE_OK;
+    rr.http_status_code = location->return_code;
+    rr.location = location;
+    rr.file_path = "";
+    rr.error_message = "";
+    rr.is_directory = false;
+    rr.should_list_directory = false;
+    rr.is_cgi_request = false;
+    rr.is_redirect = true;
+    rr.redirect_location = location->return_url;
+    return rr;
+  }
+
   // Check if method is allowed
   if (!is_method_allowed(*location, method)) {
     std::cout << "Method " << method_to_string(method)
@@ -57,6 +73,8 @@ RouteResult Router::route_request(const ServerConfig &server,
   result.location = location;
   result.error_message = "";
   result.is_cgi_request = !location->cgi_pass.empty();
+  result.is_redirect = false;
+  result.redirect_location.clear();
 
   // Resolve file path
   result.file_path = resolve_file_path(*location, uri);

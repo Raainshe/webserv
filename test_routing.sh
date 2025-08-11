@@ -166,6 +166,19 @@ response=$(curl -s -X DELETE -H "Host: localhost" http://localhost:8080/)
 verify_response_contains "Custom 405 Page" "$response"
 
 # =============================================================================
+# REDIRECTIONS (301/302)
+# =============================================================================
+
+print_test "Redirect from /old to / (301)" "curl -s -D - -o /dev/null -H 'Host: localhost' http://localhost:8080/old"
+response_headers=$(curl -s -D - -o /dev/null -H "Host: localhost" http://localhost:8080/old)
+verify_status_code "HTTP/1.1 301" "$response_headers"
+verify_response_contains "Location: /" "$response_headers"
+
+print_test "Follow redirect to / returns index page" "curl -s -L -H 'Host: localhost' http://localhost:8080/old"
+response=$(curl -s -L -H "Host: localhost" http://localhost:8080/old)
+verify_response_contains "Welcome to localhost server!" "$response"
+
+# =============================================================================
 # CLIENT MAX BODY SIZE (413)
 # =============================================================================
 

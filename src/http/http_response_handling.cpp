@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/08 00:12:38 by hpehliva          #+#    #+#             */
-/*   Updated: 2025/08/11 13:16:31 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/11 16:02:11 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,19 @@ HttpResponseHandling::handle_request(const HttpRequest &request,
   if (request.get_method() == GET && route_result.is_directory &&
       route_result.should_list_directory) {
     return serve_directory_listing(route_result.file_path, request.get_path());
+  }
+
+  // Redirection: if router requested redirect, emit 3xx with Location
+  if (route_result.is_redirect && !route_result.redirect_location.empty() &&
+      route_result.http_status_code >= 300 && route_result.http_status_code <= 399) {
+    std::ostringstream response_stream;
+    response_stream << "HTTP/1.1 " << route_result.http_status_code << " "
+                    << get_status_message(route_result.http_status_code) << "\r\n";
+    response_stream << "Location: " << route_result.redirect_location << "\r\n";
+    response_stream << "Content-Length: 0\r\n";
+    response_stream << "Server: webserv/1.0\r\n";
+    response_stream << "\r\n";
+    return response_stream.str();
   }
 
   switch (request.get_method()) {
@@ -285,6 +298,16 @@ std::string HttpResponseHandling::get_status_message(int status_code) {
     return "Created";
   case 204:
     return "No Content";
+  case 301:
+    return "Moved Permanently";
+  case 302:
+    return "Found";
+  case 303:
+    return "See Other";
+  case 307:
+    return "Temporary Redirect";
+  case 308:
+    return "Permanent Redirect";
   case 400:
     return "Bad Request";
   case 403:

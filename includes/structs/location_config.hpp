@@ -12,6 +12,9 @@ struct LocationConfig {
     std::vector<std::string> allow_methods;
     std::string upload_store;
     std::string cgi_pass;
+    // Optional redirection: "return <3xx> <url>;"
+    int return_code;            // e.g., 301, 302, 307, 308
+    std::string return_url;     // absolute or relative URL
 };
 
 #endif // LOCATION_CONFIG_HPP 
