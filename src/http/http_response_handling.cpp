@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/08 00:12:38 by hpehliva          #+#    #+#             */
-/*   Updated: 2025/08/09 14:31:51 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/11 13:16:31 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,9 @@ HttpResponseHandling::~HttpResponseHandling() {}
 std::string
 HttpResponseHandling::handle_request(const HttpRequest &request,
                                      const RouteResult &route_result) {
-  // If routing said directory listing is needed
-  if (route_result.is_directory && route_result.should_list_directory) {
+  // Only serve directory listing automatically for GET requests
+  if (request.get_method() == GET && route_result.is_directory &&
+      route_result.should_list_directory) {
     return serve_directory_listing(route_result.file_path, request.get_path());
   }
 
@@ -58,11 +59,110 @@ HttpResponseHandling::handle_get_request(const HttpRequest & /*request*/,
   return serve_file(file_path);
 }
 
+static std::string basename_only(const std::string &name) {
+  size_t pos = name.find_last_of("/\\");
+  std::string base = (pos == std::string::npos) ? name : name.substr(pos + 1);
+  // Remove any parent directory traversal
+  if (base == "." || base == "..")
+    base.clear();
+  // Remove control characters
+  std::string cleaned;
+  for (size_t i = 0; i < base.size(); ++i) {
+    unsigned char c = static_cast<unsigned char>(base[i]);
+    if (c >= 32 && c != 127)
+      cleaned.push_back(base[i]);
+  }
+  return cleaned;
+}
+
+static std::string join_path_safe(const std::string &dir,
+                                  const std::string &file) {
+  std::string result = dir;
+  if (!result.empty() && result[result.size() - 1] != '/')
+    result += "/";
+  result += file;
+  return result;
+}
+
+static bool ensure_directory(const std::string &path) {
+  struct stat st;
+  if (stat(path.c_str(), &st) == 0) {
+    return S_ISDIR(st.st_mode);
+  }
+  return mkdir(path.c_str(), 0755) == 0;
+}
+
+static bool write_file_bytes(const std::string &path, const std::string &data) {
+  std::ofstream out(path.c_str(), std::ios::binary);
+  if (!out.is_open())
+    return false;
+  out.write(data.data(), static_cast<std::streamsize>(data.size()));
+  return out.good();
+}
+
+static std::string dedup_filename(const std::string &dir,
+                                  const std::string &filename) {
+  std::string name = filename;
+  size_t dot = name.find_last_of('.');
+  std::string base = (dot == std::string::npos) ? name : name.substr(0, dot);
+  std::string ext =
+      (dot == std::string::npos) ? std::string() : name.substr(dot);
+  std::string candidate = name;
+  int counter = 1;
+  struct stat st;
+  while (stat(join_path_safe(dir, candidate).c_str(), &st) == 0) {
+    std::ostringstream ss;
+    ss << base << "(" << counter++ << ")" << ext;
+    candidate = ss.str();
+  }
+  return candidate;
+}
+
 std::string
 HttpResponseHandling::handle_post_request(const HttpRequest &request,
                                           const RouteResult &route_result) {
-  (void)route_result;
-  (void)request;
+  const LocationConfig *loc = route_result.location;
+
+  if (request.is_multipart() && loc && !loc->upload_store.empty()) {
+    // Ensure upload directory exists
+    if (!ensure_directory(loc->upload_store)) {
+      return build_error_response(500, "Failed to create upload directory");
+    }
+
+    const std::vector<HttpRequest::UploadedFile> &files =
+        request.get_uploaded_files();
+    if (files.empty()) {
+      // No files, but could be fields only
+      std::string body = "No files uploaded";
+      return build_response(200, "text/plain", body);
+    }
+
+    std::ostringstream summary;
+    summary << "{";
+    summary << "\"saved\":[";
+
+    bool first = true;
+    for (size_t i = 0; i < files.size(); ++i) {
+      std::string safe = basename_only(files[i].filename);
+      if (safe.empty())
+        safe = "upload.bin";
+      safe = dedup_filename(loc->upload_store, safe);
+      std::string out_path = join_path_safe(loc->upload_store, safe);
+      if (!write_file_bytes(out_path, files[i].data)) {
+        return build_error_response(500, "Failed to save uploaded file");
+      }
+      if (!first)
+        summary << ",";
+      first = false;
+      summary << "{\"field\":\"" << files[i].fieldName << "\",";
+      summary << "\"filename\":\"" << safe << "\"}";
+    }
+    summary << "]}";
+    std::string content = summary.str();
+    return build_response(201, "application/json", content);
+  }
+
+  // Default legacy behavior for non-multipart or no upload target
   std::string body = "POST request received successfully!";
   return build_response(200, "text/plain", body);
 }
