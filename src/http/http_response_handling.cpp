@@ -6,7 +6,7 @@
 /*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/08 00:12:38 by hpehliva          #+#    #+#             */
-/*   Updated: 2025/08/08 02:40:03 by hpehliva         ###   ########.fr       */
+/*   Updated: 2025/08/08 15:26:59 by hpehliva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,9 @@
 #include "../../includes/webserv.hpp"
 #include <sys/stat.h>
 
-HttpResponseHandling::HttpResponseHandling(const ServerConfig* server_config)
+HttpResponseHandling::HttpResponseHandling(const ServerConfig* server_config) : server_config(server_config)
 {
-    (void)server_config; // Suppress unused parameter warning
+    // (void)server_config; // Suppress unused parameter warning
 }
 
 HttpResponseHandling::~HttpResponseHandling()
@@ -132,9 +132,9 @@ std::string HttpResponseHandling::build_error_response(int status_code, const st
 
 std::string HttpResponseHandling::get_file_path(const std::string& uri){
     std::string root = "./www";
-    // if(server_config && !server_config->locations.empty()) {
-    //     root = server_config->locations[0].root;
-    // }
+    if(server_config && !server_config->locations.empty()) {
+        root = server_config->locations[0].root;
+    }
     std::string path = root + uri; // Start with the root directory
     // if(path[path.length() - 1] != '/' || uri[0] != '/')
     //     path += "/";
