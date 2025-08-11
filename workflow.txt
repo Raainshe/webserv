@@ -42,7 +42,7 @@ Webserv Project Workflow
    - Fork and exec the CGI process, set up environment variables, and handle input/output.
    - Unchunk request bodies and handle CGI output as required.
 
-9. Uploads and POST Handling (Halime)
+9. Uploads and POST Handling (Kevin)
    - Support file uploads (multipart/form-data).
    - Save uploaded files to the configured directory.
 
