@@ -6,13 +6,14 @@
 /*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/08 15:13:43 by hpehliva         ###   ########.fr       */
+/*   Updated: 2025/08/12 08:54:39 by hpehliva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 #include "../../includes/networking/event_loop.hpp"
 #include "webserv.hpp" // IWYU pragma: keep
+#include "../includes/http/http_cgi_handler.hpp"
 
 EventLoop::EventLoop(SocketManager &sm, time_t timeout)
     : socket_manager(sm), running(false), timeout_seconds(timeout) {}
@@ -194,8 +195,17 @@ void EventLoop::handle_client_read(int client_fd) {
     std::string response;
 
     if (route_result.status == ROUTE_OK) {
-      HttpResponseHandling handler(server_config);
-      response = handler.handle_request(request);
+      if(route_result.is_cgi_request) {
+        std::cout << "Processing CGI request for URI: " << route_result.file_path << std::endl;
+        // Handle CGI request
+        CgiHandler cgi_handler;
+        response = cgi_handler.execute_cgi(request, *route_result.location, route_result.file_path);
+      } else {
+        HttpResponseHandling handler(server_config);
+        response = handler.handle_request(request);
+      }
+      // HttpResponseHandling handler(server_config);
+      // response = handler.handle_request(request);
       // // Successful routing
       // std::string response_body = "Route successful!\n";
       // response_body += "Server: " + server_config->server_name + " (port " +
