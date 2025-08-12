@@ -6,16 +6,16 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 15:45:00 by ksinn             #+#    #+#             */
-/*   Updated: 2025/08/04 18:09:43 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/11 16:02:11 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef ROUTING_HPP
 #define ROUTING_HPP
 
-#include "http/http_request.hpp"
-#include "structs/location_config.hpp"
-#include "structs/server_config.hpp"
+#include "../structs/location_config.hpp"
+#include "../structs/server_config.hpp"
+#include "http_request.hpp"
 #include <string>
 
 enum RouteStatus {
@@ -34,6 +34,8 @@ struct RouteResult {
   bool is_directory;              // True if path points to directory
   bool should_list_directory;     // True if directory listing should be shown
   bool is_cgi_request;            // True if this should be handled by CGI
+  bool is_redirect;               // True if this route should redirect
+  std::string redirect_location;  // Location header target
 };
 
 class Router {

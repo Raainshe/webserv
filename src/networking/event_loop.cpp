@@ -3,17 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   event_loop.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
+/*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
 /*   Updated: 2025/08/12 08:54:39 by hpehliva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-
 #include "../../includes/networking/event_loop.hpp"
 #include "webserv.hpp" // IWYU pragma: keep
 #include "../includes/http/http_cgi_handler.hpp"
+#include "../../includes/http/http_response_handling.hpp"
+#include <algorithm>
 
 EventLoop::EventLoop(SocketManager &sm, time_t timeout)
     : socket_manager(sm), running(false), timeout_seconds(timeout) {}
@@ -162,6 +163,48 @@ void EventLoop::handle_client_read(int client_fd) {
     return;
   }
 
+  // Enforce client_max_body_size early (when headers parsed and entering body)
+  if (request.get_state() == PARSING_BODY) {
+    const ServerConfig *server_config_for_limit =
+        select_server_config(client, request);
+    if (server_config_for_limit) {
+      size_t limit = server_config_for_limit->client_max_body_size;
+      size_t content_length = request.get_content_length();
+      if (content_length == 0) {
+        std::string cl_hdr = request.get_header("content-length");
+        if (!cl_hdr.empty()) {
+          content_length =
+              static_cast<size_t>(std::strtoul(cl_hdr.c_str(), NULL, 10));
+        }
+      }
+      if (content_length > 0 && limit > 0 && content_length > limit) {
+        HttpResponseHandling responder(server_config_for_limit);
+        std::string resp =
+            responder.build_error_response(413, "Payload Too Large");
+        client->clear_buffer();
+        client->append_to_buffer(resp);
+        client->set_state(WRITING);
+        update_poll_events(client_fd, POLLOUT);
+        request_parser.reset();
+        request.clear();
+        return;
+      }
+      // Safety: if body grows beyond limit (for future non-length cases)
+      if (limit > 0 && request.get_body().size() > limit) {
+        HttpResponseHandling responder(server_config_for_limit);
+        std::string resp =
+            responder.build_error_response(413, "Payload Too Large");
+        client->clear_buffer();
+        client->append_to_buffer(resp);
+        client->set_state(WRITING);
+        update_poll_events(client_fd, POLLOUT);
+        request_parser.reset();
+        request.clear();
+        return;
+      }
+    }
+  }
+
   // Check if request is complete
   if (request.is_complete()) {
     std::cout << "HTTP request completed: " << request.get_method() << " "
@@ -185,15 +228,41 @@ void EventLoop::handle_client_read(int client_fd) {
       request.clear();
       return;
     }
-    
+
     std::cout << "Selected server: " << server_config->server_name << " (port "
               << server_config->listen_port << ")" << std::endl;
+
+    // Enforce client_max_body_size on completed requests as well
+    size_t limit = server_config->client_max_body_size;
+    size_t content_length = request.get_content_length();
+    if (content_length == 0) {
+      std::string cl_hdr = request.get_header("content-length");
+      if (!cl_hdr.empty()) {
+        content_length =
+            static_cast<size_t>(std::strtoul(cl_hdr.c_str(), NULL, 10));
+      }
+    }
+    if ((limit > 0 && content_length > limit) ||
+        (limit > 0 && request.get_body().size() > limit)) {
+      HttpResponseHandling responder(server_config);
+      std::string resp =
+          responder.build_error_response(413, "Payload Too Large");
+
+      client->clear_buffer();
+      client->append_to_buffer(resp);
+      client->set_state(WRITING);
+      update_poll_events(client_fd, POLLOUT);
+
+      request_parser.reset();
+      request.clear();
+      return;
+    }
 
     // Step 7: Routing and Methods - Route the request
     RouteResult route_result = router.route_request(*server_config, request);
 
     std::string response;
-
+    HttpResponseHandling responder(server_config);
     if (route_result.status == ROUTE_OK) {
       if(route_result.is_cgi_request) {
         std::cout << "Processing CGI request for URI: " << route_result.file_path << std::endl;
@@ -291,6 +360,17 @@ void EventLoop::handle_client_read(int client_fd) {
 
     // TODO: Step 6 - HTTP Response Handling will replace this with actual file
     // serving
+      // Build a real HTTP response (serve file / directory listing)
+      response = responder.handle_request(request, route_result);
+    } else {
+      // Build error response according to routing decision
+      int code = route_result.http_status_code;
+      std::string message = route_result.error_message.empty()
+                                ? "Error"
+                                : route_result.error_message;
+      response = responder.build_error_response(code, message);
+    }
+
     client->clear_buffer();
     client->append_to_buffer(response);
     client->set_state(WRITING);
@@ -460,21 +540,23 @@ EventLoop::select_server_config(ClientConnection *client,
     hostname = hostname.substr(0, colon_pos);
   }
 
-  // TODO: In a complete implementation, we would check all servers on the same
-  // port For now, we'll check if the hostname matches the current server's
-  // server_name
-  if (hostname == base_config->server_name) {
-    std::cout << "Host header '" << hostname << "' matches server_name '"
-              << base_config->server_name << "'" << std::endl;
-    return base_config;
+  // Search all servers bound to this socket for a matching server_name
+  const std::vector<ServerConfig> *servers_on_socket =
+      socket_manager.get_servers_for_socket(server_socket_fd);
+  if (servers_on_socket) {
+    for (std::vector<ServerConfig>::const_iterator it =
+             servers_on_socket->begin();
+         it != servers_on_socket->end(); ++it) {
+      if (it->server_name == hostname) {
+        std::cout << "Host header '" << hostname << "' matches server_name '"
+                  << it->server_name << "'" << std::endl;
+        return &(*it);
+      }
+    }
   }
-
-  // TODO: Future enhancement - search all servers listening on the same port
-  // and return the one with matching server_name
-
   // No match found - use default server (first server for this port)
-  std::cout << "Host header '" << hostname << "' does not match server_name '"
-            << base_config->server_name << "', using default server"
-            << std::endl;
+  std::cout << "Host header '" << hostname
+            << "' did not match any server on this port, using default: "
+            << base_config->server_name << std::endl;
   return base_config;
 }

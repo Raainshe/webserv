@@ -27,22 +27,22 @@ Webserv Project Workflow
 	- Read data from client sockets and parse HTTP requests (GET, POST, DELETE).
 	- Handle request headers, body, and chunked encoding if needed.
 
-6. HTTP Response Handling (Halime)
-   - Generate correct HTTP responses (status codes, headers, body).
-   - Serve static files from the configured root.
-   - Implement default error pages.
+	6. HTTP Response Handling (Halime)
+	- Generate correct HTTP responses (status codes, headers, body).
+	- Serve static files from the configured root.
+	- Implement default error pages.
 
 	7. Routing and Methods
 	- Match requests to routes as defined in the config.
 	- Enforce allowed HTTP methods per route.
 	- Implement redirections, directory listing, default files, etc.
 
-8. CGI Support
+8. CGI Support (Halime)
    - Detect when a request should be handled by a CGI script (e.g., .php).
    - Fork and exec the CGI process, set up environment variables, and handle input/output.
    - Unchunk request bodies and handle CGI output as required.
 
-9. Uploads and POST Handling
+9. Uploads and POST Handling (Kevin)
    - Support file uploads (multipart/form-data).
    - Save uploaded files to the configured directory.
 

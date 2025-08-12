@@ -115,23 +115,19 @@ help:
 
 # Test target for tokenizer
 TEST_TOKENIZER_SRC = src/parsing/test_tokenizer.cpp src/parsing/tokenizer.cpp
-TEST_TOKENIZER_OBJ = $(addprefix $(OUT_DIR)/, $(notdir $(TEST_TOKENIZER_SRC:.cpp=.o)))
+TEST_TOKENIZER_OBJ = $(patsubst src/%.cpp,$(OUT_DIR)/%.o,$(TEST_TOKENIZER_SRC))
 
 test_tokenizer: $(OUT_DIR) $(TEST_TOKENIZER_OBJ)
 	@echo "$(YELLOW)Linking test_tokenizer...$(NC)"
 	@$(CXX) $(CXXFLAGS) $(TEST_TOKENIZER_OBJ) -o test_tokenizer
 	@echo "$(GREEN)test_tokenizer built successfully!$(NC)"
 
-$(OUT_DIR)/%.o: src/parsing/%.cpp | $(OUT_DIR)
-	@echo "$(CYAN)Compiling $<...$(NC)"
-	@$(CXX) $(CXXFLAGS) -c $< -o $@
-
 run_test_tokenizer: test_tokenizer
 	@./test_tokenizer
 
 # Test target for parser
 TEST_PARSER_SRC = src/parsing/test_parser.cpp src/parsing/parser.cpp src/parsing/tokenizer.cpp
-TEST_PARSER_OBJ = $(addprefix $(OUT_DIR)/, $(notdir $(TEST_PARSER_SRC:.cpp=.o)))
+TEST_PARSER_OBJ = $(patsubst src/%.cpp,$(OUT_DIR)/%.o,$(TEST_PARSER_SRC))
 
 test_parser: $(OUT_DIR) $(TEST_PARSER_OBJ)
 	@echo "$(YELLOW)Linking test_parser...$(NC)"
@@ -143,7 +139,7 @@ run_test_parser: test_parser
 
 # Test target for error handling
 TEST_ERROR_HANDLING_SRC = src/parsing/test_error_handling.cpp src/parsing/parser.cpp src/parsing/tokenizer.cpp
-TEST_ERROR_HANDLING_OBJ = $(addprefix $(OUT_DIR)/, $(notdir $(TEST_ERROR_HANDLING_SRC:.cpp=.o)))
+TEST_ERROR_HANDLING_OBJ = $(patsubst src/%.cpp,$(OUT_DIR)/%.o,$(TEST_ERROR_HANDLING_SRC))
 
 test_error_handling: $(OUT_DIR) $(TEST_ERROR_HANDLING_OBJ)
 	@echo "$(YELLOW)Linking test_error_handling...$(NC)"

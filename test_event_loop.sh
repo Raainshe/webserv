@@ -16,7 +16,7 @@ echo "Server started with PID: $SERVER_PID"
 # Test 1: Basic connection
 echo -e "\nTest 1: Basic connection test"
 echo "Sending HTTP request..."
-RESPONSE=$(echo -e "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n" | nc -w 5 localhost 8080 2>/dev/null)
+RESPONSE=$(echo -e "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n" | nc -N -w 5 localhost 8080 2>/dev/null)
 if [ $? -eq 0 ]; then
     echo "✓ Connection successful"
     echo "Response received: ${RESPONSE:0:50}..."
@@ -26,13 +26,18 @@ fi
 
 # Test 2: Multiple connections
 echo -e "\nTest 2: Multiple connections test"
+nc_pids=()
 for i in {1..3}; do
     echo "Connection $i..."
-    echo -e "GET /test$i HTTP/1.1\r\nHost: localhost\r\n\r\n" | nc -w 3 localhost 8080 >/dev/null 2>&1 &
+    # Launch nc in background and track only nc PIDs (avoid waiting for server PID)
+    ( echo -e "GET /test$i HTTP/1.1\r\nHost: localhost\r\n\r\n" | nc -N -w 3 localhost 8080 >/dev/null 2>&1 ) &
+    nc_pids+=("$!")
 done
 
-# Wait for connections to complete
-wait
+# Wait only for the nc background jobs
+for pid in "${nc_pids[@]}"; do
+    wait "$pid"
+done
 
 echo "✓ Multiple connections handled"
 
@@ -55,4 +60,4 @@ echo "The event loop is working correctly with:"
 echo "- Non-blocking I/O using poll()"
 echo "- Multiple client connections"
 echo "- Proper connection cleanup"
-echo "- Server stability" 
+echo "- Server stability"
