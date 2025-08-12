@@ -266,6 +266,46 @@ HttpResponseHandling::build_error_response(int status_code,
   body << "<hr><p>webserv/1.0</p></body></html>\n";
   return build_response(status_code, "text/html", body.str());
 }
+
+std::string HttpResponseHandling::build_error_response(int status_code, const std::string& message){
+    std::ostringstream body;
+    body << "<!DOCTYPE html>\n";
+    body << "<html><head><title>" << status_code << " " << message << "</title></head>\n";
+    body << "<body><h1>" << status_code << " " << message << "</h1>\n";
+    body << "<hr><p>webserv/1.0</p></body></html>\n";
+    return build_response(status_code, "text/html", body.str());
+}
+
+std::string HttpResponseHandling::get_file_path(const std::string& uri){
+    std::string root = "./www";
+    if(server_config && !server_config->locations.empty()) {
+        root = server_config->locations[0].root;
+    }
+    std::string path = root + uri; // Start with the root directory
+    // if(path[path.length() - 1] != '/' || uri[0] != '/')
+    //     path += "/";
+    // if(path[path.length() - 1] == '/' && uri[0] == '/')
+    //     path += path.substr(0,path.length() - 1); // Remove leading slash from uri
+    // path += uri;
+
+    std::cout << "DEBUG: get_file_path: " << path << std::endl;
+    return path;
+}
+std::string HttpResponseHandling::get_mime_type(const std::string& file_path){
+    size_t dot_pos = file_path.find_last_of('.');
+    if(dot_pos == std::string::npos)
+        return "application/octet-stream"; // Default binary type
+    
+    std::string extension = file_path.substr(dot_pos + 1);
+
+    if(extension == "html" || extension == "htm") return "text/html";
+    if(extension == "css") return "text/css";
+    if(extension == "js") return "application/javascript";
+    if(extension == "jpg" || extension == "jpeg") return "image/jpeg";
+    if(extension == "png") return "image/png";
+    if(extension == "gif") return "image/gif";
+    if(extension == "txt") return "text/plain"; 
+    
 std::string HttpResponseHandling::get_mime_type(const std::string &file_path) {
   size_t dot_pos = file_path.find_last_of('.');
   if (dot_pos == std::string::npos)

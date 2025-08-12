@@ -19,7 +19,7 @@
 
 class HttpResponseHandling {
 private:
-  const ServerConfig *server_config;
+    const ServerConfig* server_config;
 
 public:
   explicit HttpResponseHandling(const ServerConfig *server_config);
