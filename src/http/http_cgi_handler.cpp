@@ -6,7 +6,7 @@
 /*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 10:28:57 by hpehliva          #+#    #+#             */
-/*   Updated: 2025/08/11 16:34:16 by hpehliva         ###   ########.fr       */
+/*   Updated: 2025/08/12 08:23:41 by hpehliva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,9 @@
 #include <signal.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include "../includes/webserv.hpp"
+
+#define BUFFER_SIZE 8192
 
 CgiHandler::CgiHandler(){}
 CgiHandler::~CgiHandler(){}
@@ -50,9 +53,7 @@ std::string CgiHandler::execute_cgi(const HttpRequest& request, const LocationCo
     close(output_pipe[1]);
 
     if(request.get_method() == POST && !request.get_body().empty()){
-        if(!write_cgi_input(input_pipe[1], request.get_body())) {
-            std::cerr << "Failed to write input data to CGI script" << std::endl;
-        }
+        write_cgi_input(input_pipe[1], request.get_body());
     }
     close(input_pipe[1]);
     
@@ -70,7 +71,7 @@ std::string CgiHandler::execute_cgi(const HttpRequest& request, const LocationCo
     waitpid(cgi_pid, &status, 0);
     cleanup_env_array(env_array, env_vars.size());
     if(WIFEXITED(status) && WEXITSTATUS(status) == 0) {
-        return build_cgi_response(cgi_output); // It could be reversed
+        return build_http_response(cgi_output); // It could be reversed
     } else {
         std::cerr << "CGI script exited with error" << std::endl;
         return create_cgi_errror(500, "CGI script execution failed");
@@ -86,12 +87,20 @@ std::string CgiHandler::execute_cgi(const HttpRequest& request, const LocationCo
 
 std::vector<std::string> CgiHandler::build_cgi_environment(const HttpRequest& request, const LocationConfig& location, const std::string& script_path)
 {
+    (void)location; // Unused variable, but can be used for future extensions
     std::vector<std::string> env_vars;
     
-    env_vars.push_back("REQUEST_METHOD=" + 
-        (request.get_method() == GET ? "GET" : 
-         request.get_method() == POST ? "POST" : 
-         request.get_method() == DELETE ? "DELETE" : "UNKNOWN"));
+    std::string method_str;
+    if (request.get_method() == GET) {
+        method_str = "GET";
+    } else if (request.get_method() == POST) {
+        method_str = "POST";
+    } else if (request.get_method() == DELETE) {
+        method_str = "DELETE";
+    } else {
+        method_str = "UNKNOWN";
+    }
+    env_vars.push_back("REQUEST_METHOD=" + method_str);
     
     env_vars.push_back("SERVER_SOFTWARE=webserv/1.0");
     env_vars.push_back("SERVER_NAME=" + request.get_header("host"));
@@ -156,12 +165,12 @@ pid_t CgiHandler::fork_cgi_process(const std::string& cgi_binary, const std::str
     
     if(pid == 0)
     {
-        dubp2(input_pipe[0], STDIN_FILENO);
+        dup2(input_pipe[0], STDIN_FILENO);
         dup2(output_pipe[1], STDOUT_FILENO);
 
-        close(input_pipe[0]; close(input_pipe[1]);
+        close(input_pipe[0]); close(input_pipe[1]);
         close(output_pipe[0]); close(output_pipe[1]);
-
+        
         std::string script_dir = script_path.substr(0, script_path.find_last_of('/'));
         if(!script_dir.empty()) {
             chdir(script_dir.c_str());
@@ -192,6 +201,7 @@ std::string CgiHandler::read_cgi_output(int output_fd, pid_t cgi_pid){
     char buffer[BUFFER_SIZE];
     
     // set none-blocking mode for reading
+    int flags = fcntl(output_fd, F_GETFL, 0);
     fcntl(output_fd, F_SETFL, flags | O_NONBLOCK);
     time_t start_time = time(NULL);
 
@@ -221,10 +231,10 @@ std::string CgiHandler::read_cgi_output(int output_fd, pid_t cgi_pid){
     return output;
 }
 
-void CgiHandler::write_cgi_input(int input_fd, const std::string& input_data){
+void CgiHandler::write_cgi_input(int input_fd, const std::string& input_data) {
     size_t total_written = 0;
-    const char* data = body.c_str();
-    size_t data_size = body.length();
+    const char* data = input_data.c_str();
+    size_t data_size = input_data.length();
 
     while(total_written < data_size){
         ssize_t bytes_written = write(input_fd, data + total_written, data_size - total_written);
@@ -236,7 +246,7 @@ void CgiHandler::write_cgi_input(int input_fd, const std::string& input_data){
                 continue;
             } else {
                 std::cerr << "Error writing to CGI input: " << strerror(errno) << std::endl;
-                return false;
+                return ;
             }
         } else if(bytes_written == 0) {
             // No more data to write
@@ -244,10 +254,9 @@ void CgiHandler::write_cgi_input(int input_fd, const std::string& input_data){
         }
         total_written += bytes_written;
     }
-    return true;
 }
 
-std::string CgiHandler::build_http_response(const std::string& output){
+std::string CgiHandler::build_http_response(const std::string& cgi_output){
     // find the separator between headers and body
     size_t header_end = cgi_output.find("\r\n\r\n");
     if(header_end == std::string::npos) {
@@ -261,7 +270,7 @@ std::string CgiHandler::build_http_response(const std::string& output){
             response << cgi_output;
             return response.str();
         }
-        header_End += 2;
+        header_end += 2;
     } else {
         header_end += 4;
     }
@@ -277,7 +286,7 @@ std::string CgiHandler::build_http_response(const std::string& output){
     std::istringstream header_stream(headers);
     std::string line;
 
-    while(std::getline(header_Stream, line)) {
+    while(std::getline(header_stream, line)) {
         if(line.empty() || line == "\r") break;
         
         size_t colon_pos = line.find(':');
@@ -289,9 +298,9 @@ std::string CgiHandler::build_http_response(const std::string& output){
             while(!header_value.empty() && isspace(header_value[0])){
                 header_value.erase(0,1);
             }
-            while(!header_value.empty() && isspace(header_value[header_value.lenght() - 1]))
+            while(!header_value.empty() && isspace(header_value[header_value.length() - 1]))
             {
-                header_value.erase(header_value.lenght() -1);
+                header_value.erase(header_value.length() -1);
             }
 
             if(header_name == "Status") {
@@ -305,7 +314,11 @@ std::string CgiHandler::build_http_response(const std::string& output){
     }
     // Build HTTP response
     std::ostringstream response;
-    response << "HTTP/1.1 " << status << "\r\n";
+    if(!has_status) {
+        response << "HTTP/1.1 " << status << "\r\n";
+    } else {
+        response << "HTTP/1.1 " << status << "\r\n";
+    }
     
     // Add CGI headers
     std::istringstream header_stream2(headers);
@@ -342,7 +355,7 @@ bool CgiHandler::wait_for_process(pid_t pid, int timeout_seconds){
             return true;
         else if (result == -1)
             return false;
-        usleep(100000)// 100 ms
+        usleep(100000);// 100 ms
     }
     return false;
 }

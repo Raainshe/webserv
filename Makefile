@@ -22,7 +22,8 @@ SRCS = \
 	http/http_request.cpp \
 	http/request_parser.cpp \
 	http/routing.cpp \
-	http/http_response_handling.cpp
+	http/http_response_handling.cpp \
+	http/http_cgi_handler.cpp
 
 # Object files
 OBJS = \
@@ -36,7 +37,8 @@ OBJS = \
 	$(OUT_DIR)/http/http_request.o \
 	$(OUT_DIR)/http/request_parser.o \
 	$(OUT_DIR)/http/routing.o \
-	$(OUT_DIR)/http/http_response_handling.o
+	$(OUT_DIR)/http/http_response_handling.o \
+	$(OUT_DIR)/http/http_cgi_handler.o
 
 # Compiler and flags
 CXX = c++

@@ -6,7 +6,7 @@
 /*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 09:25:47 by hpehliva          #+#    #+#             */
-/*   Updated: 2025/08/11 16:12:45 by hpehliva         ###   ########.fr       */
+/*   Updated: 2025/08/12 08:15:12 by hpehliva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,11 +41,10 @@ class CgiHandler {
         std::string read_cgi_output(int output_fd, pid_t cgi_pid);
         void write_cgi_input(int input_fd, const std::string& input_data);
 
-        std::string build_http_response(const std::string& output);
+        std::string build_http_response(const std::string& cgi_output);
         bool wait_for_process(pid_t pid, int timeout_seconds);
         
         std::string create_cgi_errror(int error_code, const std::string& message);
 };
-
 
 #endif
