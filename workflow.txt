@@ -37,14 +37,14 @@ Webserv Project Workflow
 	- Enforce allowed HTTP methods per route.
 	- Implement redirections, directory listing, default files, etc.
 
-8. CGI Support (Halime)
-   - Detect when a request should be handled by a CGI script (e.g., .php).
-   - Fork and exec the CGI process, set up environment variables, and handle input/output.
-   - Unchunk request bodies and handle CGI output as required.
+	8. CGI Support (Halime)
+	- Detect when a request should be handled by a CGI script (e.g., .php).
+	- Fork and exec the CGI process, set up environment variables, and handle input/output.
+	- Unchunk request bodies and handle CGI output as required.
 
-9. Uploads and POST Handling (Kevin)
-   - Support file uploads (multipart/form-data).
-   - Save uploaded files to the configured directory.
+	9. Uploads and POST Handling (Kevin)
+	- Support file uploads (multipart/form-data).
+	- Save uploaded files to the configured directory.
 
 	10. Multiple Servers/Ports
 		- Ensure the server can listen on multiple ports/hosts as per config.

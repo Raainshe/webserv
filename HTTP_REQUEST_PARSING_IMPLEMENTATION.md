@@ -73,15 +73,30 @@ Successfully implemented step 5 of the webserv workflow: **HTTP Request Parsing*
 
 ### Step 8 - CGI Support
 ```cpp
-// TODO: Implement chunked encoding parsing for step 8 (CGI support)
-// bool parse_chunked_body(HttpRequest& request, const std::string& data);
+// ✅ IMPLEMENTED: Chunked encoding parsing for step 8 (CGI support)
+bool parse_chunked_body(HttpRequest& request, const std::string& data);
 ```
+
+**Chunked Encoding Implementation:**
+- Handles hex chunk sizes with CRLF delimiters
+- Processes variable-length chunks sequentially
+- Validates proper CRLF formatting
+- Detects final chunk (size 0) and trailing CRLF
+- Provides detailed error messages for malformed chunks
 
 ### Step 9 - File Uploads
 ```cpp
-// TODO: Implement multipart parsing for step 9 (file uploads)
-// bool parse_multipart_body(HttpRequest& request, const std::string& data);
+// ✅ IMPLEMENTED: Multipart parsing for step 9 (file uploads)
+bool parse_multipart_body(HttpRequest& request, const std::string& data);
+bool parse_multipart_part(HttpRequest& request, const std::string& part_headers, const std::string& part_body);
 ```
+
+**Multipart Form Data Implementation:**
+- Parses multipart/form-data boundaries
+- Handles both regular form fields and file uploads
+- Extracts Content-Disposition headers (name, filename)
+- Supports Content-Type detection for uploaded files
+- Validates proper multipart formatting and boundaries
 
 ## Integration with Existing Code
 
@@ -187,4 +202,4 @@ The HTTP request parsing is ready for the next phase:
 3. **Step 8: CGI Support** - Add chunked encoding parsing
 4. **Step 9: File Uploads** - Add multipart form data parsing
 
-The HTTP request parsing implementation successfully completes step 5 and provides a solid foundation for the remaining HTTP server functionality with full RFC compliance and industry-standard error handling. 
+The HTTP request parsing implementation successfully completes step 5 and provides a solid foundation for the remaining HTTP server functionality with full RFC compliance and industry-standard error handling.

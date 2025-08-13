@@ -6,14 +6,14 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/12 08:54:39 by hpehliva         ###   ########.fr       */
+/*   Updated: 2025/08/13 17:39:52 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/networking/event_loop.hpp"
-#include "webserv.hpp" // IWYU pragma: keep
-#include "../includes/http/http_cgi_handler.hpp"
 #include "../../includes/http/http_response_handling.hpp"
+#include "../includes/http/http_cgi_handler.hpp"
+#include "webserv.hpp" // IWYU pragma: keep
 #include <algorithm>
 
 EventLoop::EventLoop(SocketManager &sm, time_t timeout)
@@ -159,6 +159,9 @@ void EventLoop::handle_client_read(int client_fd) {
       std::cout << "HTTP parsing error: " << request.get_error_code() << " - "
                 << request.get_error_message() << std::endl;
     }
+    // Reset shared parser state to avoid poisoning subsequent requests
+    request_parser.reset();
+    request.clear();
     remove_client(client_fd);
     return;
   }
@@ -264,106 +267,16 @@ void EventLoop::handle_client_read(int client_fd) {
     std::string response;
     HttpResponseHandling responder(server_config);
     if (route_result.status == ROUTE_OK) {
-      if(route_result.is_cgi_request) {
-        std::cout << "Processing CGI request for URI: " << route_result.file_path << std::endl;
-        // Handle CGI request
+      if (route_result.is_cgi_request) {
+        std::cout << "Processing CGI request for URI: "
+                  << route_result.file_path << std::endl;
         CgiHandler cgi_handler;
-        response = cgi_handler.execute_cgi(request, *route_result.location, route_result.file_path);
+        response = cgi_handler.execute_cgi(request, *route_result.location,
+                                           route_result.file_path);
       } else {
-        HttpResponseHandling handler(server_config);
-        response = handler.handle_request(request);
+        response = responder.handle_request(request, route_result);
       }
-      // HttpResponseHandling handler(server_config);
-      // response = handler.handle_request(request);
-      // // Successful routing
-      // std::string response_body = "Route successful!\n";
-      // response_body += "Server: " + server_config->server_name + " (port " +
-      //                  std::to_string(server_config->listen_port) + ")\n";
-      // response_body +=
-      //     "Matched location: " + route_result.location->path + "\n";
-      // response_body += "File path: " + route_result.file_path + "\n";
-      // response_body += "Is directory: " +
-      //                  std::string(route_result.is_directory ? "yes" : "no") +
-      //                  "\n";
-      // response_body +=
-      //     "Directory listing: " +
-      //     std::string(route_result.should_list_directory ? "enabled"
-      //                                                    : "disabled") +
-      //     "\n";
-      // response_body += "CGI request: " +
-      //                  std::string(route_result.is_cgi_request ? "yes" : "no") +
-      //                  "\n";
-
-      // response = "HTTP/1.1 200 OK\r\n";
-      // response += "Content-Type: text/plain\r\n";
-      // response +=
-      //     "Content-Length: " + std::to_string(response_body.length()) + "\r\n";
-      // response += "\r\n";
-      // response += response_body;
     } else {
-      // Routing error - generate appropriate error response
-      std::string status_line;
-      std::string response_body;
-
-      switch (route_result.http_status_code) {
-        case 404:
-          status_line = "HTTP/1.1 404 Not Found\r\n";
-          response_body = "404 Not Found: " + route_result.error_message;
-          break;
-        case 405:
-          status_line = "HTTP/1.1 405 Method Not Allowed\r\n";
-          response_body = "405 Method Not Allowed: " + route_result.error_message;
-          break;
-        case 403:
-          status_line = "HTTP/1.1 403 Forbidden\r\n";
-          response_body = "403 Forbidden: " + route_result.error_message;
-          break;
-        default:
-          status_line = "HTTP/1.1 500 Internal Server Error\r\n";
-          response_body =
-              "500 Internal Server Error: " + route_result.error_message;
-          break;
-        }
-      response = status_line;
-      response += "Content-Type: text/plain\r\n";
-      response +=
-          "Content-Length: " + std::to_string(response_body.length()) + "\r\n";
-      response += "\r\n";
-      response += response_body;
-    }
-    // // Check if request is complete
-    // if (request.is_complete()) {
-    //     std::cout << "HTTP request completed: " << request.get_method() 
-    //               << " " << request.get_uri() << std::endl;
-        
-    //     // TODO: Process the complete HTTP request (step 6 - HTTP Response Handling)
-    //     const ServerConfig* config = socket_manager.get_config_for_socket(client->get_server_socket_fd());
-
-    //     HttpResponseHandling handler(config);
-    //     std::string response = handler.handle_request(request);
-    //     // For now, send a simple response
-    //     // std::string response = "HTTP/1.1 200 OK\r\n";
-    //     response += "Content-Type: text/plain\r\n";
-    //     response += "Content-Length: 25\r\n";
-    //     response += "\r\n";
-    //     response += "HTTP Request Received!";
-        
-    //     client->clear_buffer();
-    //     client->append_to_buffer(response);
-    //     client->set_state(WRITING);
-    //     update_poll_events(client_fd, POLLOUT);
-        
-    //     // Reset parser for next request
-    //     request_parser.reset();
-    //     request.clear();
-    // }
-
-    // TODO: Step 6 - HTTP Response Handling will replace this with actual file
-    // serving
-      // Build a real HTTP response (serve file / directory listing)
-      response = responder.handle_request(request, route_result);
-    } else {
-      // Build error response according to routing decision
       int code = route_result.http_status_code;
       std::string message = route_result.error_message.empty()
                                 ? "Error"
@@ -404,7 +317,7 @@ void EventLoop::handle_client_write(int client_fd) {
   if (bytes_sent < 0) {
     // Error occurred
     remove_client(client_fd);
-    return ;
+    return;
   }
 
   if (bytes_sent == static_cast<ssize_t>(data.length())) {

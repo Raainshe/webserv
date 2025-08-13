@@ -219,9 +219,9 @@ verify_response_contains "API endpoint working" "$response"
 # CGI DETECTION
 # =============================================================================
 
-print_test "CGI location detection (not implemented yet)" "curl -s -H 'Host: localhost' http://localhost:8080/cgi-bin/script.php"
+print_test "CGI location execution error when script missing" "curl -s -H 'Host: localhost' http://localhost:8080/cgi-bin/script.php"
 response=$(curl -s -H "Host: localhost" http://localhost:8080/cgi-bin/script.php)
-verify_response_contains "Custom 404 Page" "$response"
+verify_response_contains "CGI script not found" "$response"
 
 # =============================================================================
 # ERROR CASES

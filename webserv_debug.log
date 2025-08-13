@@ -1,0 +1,71 @@
+Successfully parsed 1 server(s)
+Server socket created and listening on port 8080 (fd: 3)
+Successfully initialized 1 server socket(s)
+Webserv started successfully!
+Server is listening on 1 socket(s)
+Event loop started. Listening for connections...
+New client connected (fd: 4)
+HTTP request completed: 1 /test2
+Host header 'localhost' matches server_name 'localhost'
+Selected server: localhost (port 8080)
+Routing request: POST /test2
+Matched location: / (root: /var/www/html)
+Method POST is allowed
+Resolved file path: /var/www/html/test2
+Path does not exist: /var/www/html/test2
+Non-existent file - letting response handler decide
+Read 95 bytes from client 4
+Sent 121 bytes to client 4
+Client 4 disconnected
+New client connected (fd: 4)
+HTTP request completed: 1 /debug1
+Host header 'localhost' matches server_name 'localhost'
+Selected server: localhost (port 8080)
+Routing request: POST /debug1
+Matched location: / (root: /var/www/html)
+Method POST is allowed
+Resolved file path: /var/www/html/debug1
+Path does not exist: /var/www/html/debug1
+Non-existent file - letting response handler decide
+Read 95 bytes from client 4
+Sent 121 bytes to client 4
+Client 4 disconnected
+New client connected (fd: 4)
+HTTP request completed: 1 /debug2
+Host header 'localhost' matches server_name 'localhost'
+Selected server: localhost (port 8080)
+Routing request: POST /debug2
+Matched location: / (root: /var/www/html)
+Method POST is allowed
+Resolved file path: /var/www/html/debug2
+Path does not exist: /var/www/html/debug2
+Non-existent file - letting response handler decide
+Read 100 bytes from client 4
+Sent 121 bytes to client 4
+Client 4 disconnected
+New client connected (fd: 4)
+HTTP request completed: 1 /debug3
+Host header 'localhost' matches server_name 'localhost'
+Selected server: localhost (port 8080)
+Routing request: POST /debug3
+Matched location: / (root: /var/www/html)
+Method POST is allowed
+Resolved file path: /var/www/html/debug3
+Path does not exist: /var/www/html/debug3
+Non-existent file - letting response handler decide
+Read 112 bytes from client 4
+Sent 121 bytes to client 4
+Client 4 disconnected
+New client connected (fd: 4)
+HTTP request completed: 1 /debug_all
+Host header 'localhost' matches server_name 'localhost'
+Selected server: localhost (port 8080)
+Routing request: POST /debug_all
+Matched location: / (root: /var/www/html)
+Method POST is allowed
+Resolved file path: /var/www/html/debug_all
+Path does not exist: /var/www/html/debug_all
+Non-existent file - letting response handler decide
+Read 150 bytes from client 4
+Sent 121 bytes to client 4
+Client 4 disconnected
