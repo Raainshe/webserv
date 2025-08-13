@@ -3,81 +3,63 @@
 /*                                                        :::      ::::::::   */
 /*   client_connection.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
+/*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/08 02:02:45 by hpehliva         ###   ########.fr       */
+/*   Updated: 2025/08/13 19:41:53 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
 
 #include "../../includes/networking/client_connection.hpp"
 #include "../../includes/http/http_request.hpp"
 #include "../../includes/http/http_response_handling.hpp"
 #include "../../includes/webserv.hpp"
 
-ClientConnection::ClientConnection(int fd, int server_fd) 
-    : socket_fd(fd), state(READING), last_activity(time(NULL)), 
-      server_socket_fd(server_fd) {
-}
+ClientConnection::ClientConnection(int fd, int server_fd)
+    : socket_fd(fd), state(READING), last_activity(time(NULL)),
+      server_socket_fd(server_fd) {}
 
-ClientConnection::~ClientConnection() {
-    close_connection();
-}
+ClientConnection::~ClientConnection() { close_connection(); }
 
-int ClientConnection::get_socket_fd() const {
-    return socket_fd;
-}
+int ClientConnection::get_socket_fd() const { return socket_fd; }
 
-ConnectionState ClientConnection::get_state() const {
-    return state;
-}
+ConnectionState ClientConnection::get_state() const { return state; }
 
-time_t ClientConnection::get_last_activity() const {
-    return last_activity;
-}
+time_t ClientConnection::get_last_activity() const { return last_activity; }
 
-const std::string& ClientConnection::get_buffer() const {
-    return buffer;
-}
+const std::string &ClientConnection::get_buffer() const { return buffer; }
 
-int ClientConnection::get_server_socket_fd() const {
-    return server_socket_fd;
-}
+int ClientConnection::get_server_socket_fd() const { return server_socket_fd; }
 
 void ClientConnection::set_state(ConnectionState new_state) {
-    state = new_state;
-    update_activity();
+  state = new_state;
+  update_activity();
 }
 
-void ClientConnection::update_activity() {
-    last_activity = time(NULL);
+void ClientConnection::update_activity() { last_activity = time(NULL); }
+
+void ClientConnection::append_to_buffer(const std::string &data) {
+  buffer += data;
+  update_activity();
 }
 
-void ClientConnection::append_to_buffer(const std::string& data) {
-    buffer += data;
-    update_activity();
-}
-
-void ClientConnection::clear_buffer() {
-    buffer.clear();
-}
+void ClientConnection::clear_buffer() { buffer.clear(); }
 
 bool ClientConnection::is_timed_out(time_t timeout_seconds) const {
-    return (time(NULL) - last_activity) > timeout_seconds;
+  return (time(NULL) - last_activity) > timeout_seconds;
 }
 
 void ClientConnection::close_connection() {
-    if (socket_fd >= 0) {
-        close(socket_fd);
-        socket_fd = -1;
-    }
+  if (socket_fd >= 0) {
+    close(socket_fd);
+    socket_fd = -1;
+  }
 }
 
-HttpRequest& ClientConnection::get_http_request() {
-    return http_request;
+HttpRequest &ClientConnection::get_http_request() { return http_request; }
+
+const HttpRequest &ClientConnection::get_http_request() const {
+  return http_request;
 }
 
-const HttpRequest& ClientConnection::get_http_request() const {
-    return http_request;
-} 
+RequestParser &ClientConnection::get_request_parser() { return request_parser; }

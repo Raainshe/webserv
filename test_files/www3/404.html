@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>404 - Page Not Found</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+	<style>
+		body {
+			background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+			min-height: 100vh;
+		}
+	</style>
+</head>
+
+<body class="d-flex align-items-center text-white">
+	<div class="container">
+		<div class="row justify-content-center">
+			<div class="col-lg-6">
+				<div class="card bg-dark border-danger">
+					<div class="card-body text-center p-5">
+						<div class="display-1 text-danger mb-3">
+							<i class="bi bi-exclamation-triangle-fill"></i>
+						</div>
+						<h1 class="display-4 fw-bold text-danger">404</h1>
+						<h2 class="h4 mb-4 text-light">Page Not Found</h2>
+						<p class="lead mb-2 text-light">The requested page could not be found on this server.</p>
+						<p class="mb-4 text-muted">This is a custom 404 page from the default webserv configuration.</p>
+
+						<div class="alert alert-dark border-warning" role="alert">
+							<h6 class="alert-heading"><i class="bi bi-info-circle"></i> Default Server Info:</h6>
+							<small class="text-muted">
+								Server: localhost:8080 | Config: default.conf | Root: /test_files/www3/
+							</small>
+						</div>
+
+						<div class="d-grid gap-2 d-md-flex justify-content-md-center">
+							<a href="/" class="btn btn-danger btn-lg">
+								<i class="bi bi-house"></i> Back to Home
+							</a>
+							<a href="/upload" class="btn btn-outline-light">
+								<i class="bi bi-cloud-upload"></i> Upload
+							</a>
+						</div>
+					</div>
+					<div class="card-footer bg-dark border-danger text-center">
+						<small class="text-muted">
+							<i class="bi bi-gear"></i> webserv/1.0 - Default Configuration
+						</small>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

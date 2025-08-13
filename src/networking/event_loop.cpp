@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/13 17:45:10 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/13 19:41:51 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -153,14 +153,15 @@ void EventLoop::handle_client_read(int client_fd) {
 
   // Parse HTTP request
   HttpRequest &request = client->get_http_request();
-  if (!request_parser.parse_request(request, client->get_buffer())) {
+  if (!client->get_request_parser().parse_request(request,
+                                                  client->get_buffer())) {
     // Parsing error occurred
     if (request.has_error()) {
       std::cout << "HTTP parsing error: " << request.get_error_code() << " - "
                 << request.get_error_message() << std::endl;
     }
-    // Reset shared parser state to avoid poisoning subsequent requests
-    request_parser.reset();
+    // Reset client parser state to avoid poisoning subsequent requests
+    client->get_request_parser().reset();
     request.clear();
     remove_client(client_fd);
     return;
@@ -188,7 +189,7 @@ void EventLoop::handle_client_read(int client_fd) {
         client->append_to_buffer(resp);
         client->set_state(WRITING);
         update_poll_events(client_fd, POLLOUT);
-        request_parser.reset();
+        client->get_request_parser().reset();
         request.clear();
         return;
       }
@@ -201,7 +202,7 @@ void EventLoop::handle_client_read(int client_fd) {
         client->append_to_buffer(resp);
         client->set_state(WRITING);
         update_poll_events(client_fd, POLLOUT);
-        request_parser.reset();
+        client->get_request_parser().reset();
         request.clear();
         return;
       }
@@ -227,7 +228,7 @@ void EventLoop::handle_client_read(int client_fd) {
       client->set_state(WRITING);
       update_poll_events(client_fd, POLLOUT);
 
-      request_parser.reset();
+      client->get_request_parser().reset();
       request.clear();
       return;
     }
@@ -256,7 +257,7 @@ void EventLoop::handle_client_read(int client_fd) {
       client->set_state(WRITING);
       update_poll_events(client_fd, POLLOUT);
 
-      request_parser.reset();
+      client->get_request_parser().reset();
       request.clear();
       return;
     }
@@ -289,7 +290,7 @@ void EventLoop::handle_client_read(int client_fd) {
     client->set_state(WRITING);
     update_poll_events(client_fd, POLLOUT);
     // Reset parser for next request
-    request_parser.reset();
+    client->get_request_parser().reset();
     request.clear();
   }
   std::cout << "Read " << bytes_read << " bytes from client " << client_fd

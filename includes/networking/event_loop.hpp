@@ -6,14 +6,13 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/09 12:48:01 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/13 19:41:51 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef EVENT_LOOP_HPP
 #define EVENT_LOOP_HPP
 
-#include "../http/request_parser.hpp"
 #include "../http/routing.hpp"
 #include "client_connection.hpp"
 #include "socket_manager.hpp"
@@ -31,7 +30,6 @@ private:
   SocketManager &socket_manager;
   bool running;
   time_t timeout_seconds;
-  RequestParser request_parser;
   Router router;
   // Response builder (constructed per-request in .cpp as it depends on server)
 

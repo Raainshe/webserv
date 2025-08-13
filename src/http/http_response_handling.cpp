@@ -6,11 +6,12 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/08 00:12:38 by hpehliva          #+#    #+#             */
-/*   Updated: 2025/08/13 13:36:47 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/13 18:53:20 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/http/http_response_handling.hpp"
+#include <dirent.h>
 #include <fstream>
 #include <sstream>
 #include <sys/stat.h>
@@ -220,19 +221,138 @@ HttpResponseHandling::serve_directory_listing(const std::string &directory_path,
   if (file_exists(index_path)) {
     return serve_file(index_path);
   }
-  // Basic autoindex-style listing placeholder for Step 6
+
+  // Generate Bootstrap directory listing
   std::string body;
-  body += "<html><body><h1>Index of ";
-  body += uri;
-  body += "</h1><p>Directory listing enabled</p></body></html>";
+  body += "<!DOCTYPE html>\n";
+  body += "<html lang=\"en\"><head>";
+  body += "<meta charset=\"UTF-8\">";
+  body += "<meta name=\"viewport\" content=\"width=device-width, "
+          "initial-scale=1.0\">";
+  body += "<title>Index of " + uri + "</title>";
+  body += "<link "
+          "href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/"
+          "bootstrap.min.css\" rel=\"stylesheet\">";
+  body += "<link "
+          "href=\"https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/"
+          "bootstrap-icons.css\" rel=\"stylesheet\">";
+  body += "</head><body class=\"bg-light\">";
+  body += "<div class=\"container mt-4\">";
+  body += "<div class=\"row justify-content-center\">";
+  body += "<div class=\"col-lg-10\">";
+  body += "<div class=\"card shadow-sm\">";
+  body += "<div class=\"card-header bg-primary text-white\">";
+  body +=
+      "<h1 class=\"card-title mb-0\"><i class=\"bi bi-folder\"></i> Index of " +
+      uri + "</h1>";
+  body += "</div>";
+  body += "<div class=\"card-body p-0\">";
+  body += "<div class=\"table-responsive\">";
+  body += "<table class=\"table table-hover mb-0\">";
+  body += "<thead class=\"table-light\">";
+  body += "<tr><th><i class=\"bi bi-file-earmark\"></i> Name</th><th><i "
+          "class=\"bi bi-hdd\"></i> Size</th><th><i class=\"bi "
+          "bi-info-circle\"></i> Type</th></tr>";
+  body += "</thead><tbody>";
+
+  // Add parent directory link if not root
+  if (uri != "/") {
+    std::string parent_uri = uri;
+    if (parent_uri.size() > 1 && parent_uri[parent_uri.size() - 1] == '/') {
+      parent_uri = parent_uri.substr(0, parent_uri.size() - 1);
+    }
+    size_t last_slash = parent_uri.find_last_of('/');
+    if (last_slash != std::string::npos) {
+      parent_uri = parent_uri.substr(0, last_slash + 1);
+    } else {
+      parent_uri = "/";
+    }
+    body += "<tr><td><a href=\"" + parent_uri +
+            "\" class=\"text-decoration-none\">";
+    body += "<i class=\"bi bi-arrow-up-left text-primary\"></i> ../</a></td>";
+    body += "<td><span class=\"text-muted\">-</span></td>";
+    body += "<td><span class=\"badge bg-secondary\">Directory</span></td></tr>";
+  }
+
+  // Read directory contents
+  DIR *dir = opendir(directory_path.c_str());
+  if (dir != NULL) {
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+      std::string name = entry->d_name;
+
+      // Skip . and .. entries
+      if (name == "." || name == "..") {
+        continue;
+      }
+
+      std::string full_path = directory_path;
+      if (full_path[full_path.size() - 1] != '/') {
+        full_path += "/";
+      }
+      full_path += name;
+
+      struct stat file_stat;
+      if (stat(full_path.c_str(), &file_stat) == 0) {
+        std::string file_uri = uri;
+        if (file_uri[file_uri.size() - 1] != '/') {
+          file_uri += "/";
+        }
+        file_uri += name;
+
+        bool is_dir = S_ISDIR(file_stat.st_mode);
+        std::string display_name = name;
+        std::string icon_class = is_dir ? "bi-folder-fill text-warning"
+                                        : "bi-file-earmark text-info";
+
+        // Format file size
+        std::string size_str;
+        if (is_dir) {
+          size_str = "<span class=\"text-muted\">-</span>";
+        } else {
+          off_t size = file_stat.st_size;
+          if (size < 1024) {
+            std::ostringstream ss;
+            ss << size << " B";
+            size_str = ss.str();
+          } else if (size < 1024 * 1024) {
+            std::ostringstream ss;
+            ss << (size / 1024) << " KB";
+            size_str = ss.str();
+          } else {
+            std::ostringstream ss;
+            ss << (size / (1024 * 1024)) << " MB";
+            size_str = ss.str();
+          }
+        }
+
+        std::string badge_class = is_dir ? "bg-warning text-dark" : "bg-info";
+        std::string type_str = is_dir ? "Directory" : "File";
+
+        body += "<tr><td><a href=\"" + file_uri +
+                "\" class=\"text-decoration-none\">";
+        body += "<i class=\"bi " + icon_class + "\"></i> " + display_name +
+                "</a></td>";
+        body += "<td>" + size_str + "</td>";
+        body += "<td><span class=\"badge " + badge_class + "\">" + type_str +
+                "</span></td></tr>";
+      }
+    }
+    closedir(dir);
+  }
+
+  body += "</tbody></table>";
+  body += "</div></div>";
+  body += "<div class=\"card-footer text-muted text-center\">";
+  body += "<small><i class=\"bi bi-gear\"></i> webserv/1.0</small>";
+  body += "</div></div></div></div></div>";
+  body += "<script "
+          "src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/"
+          "bootstrap.bundle.min.js\"></script>";
+  body += "</body></html>";
+
   return build_response(200, "text/html", body);
 }
-// std::string serve_error_page(int error_code);
-// std::string serve_cgi(const HttpRequest& request);
-// std::string serve_redirect(const std::string& redirect_url);
-// std::string serve_autoindex(const std::string& directory_path);
-// std::string serve_default_page(const std::string& directory_path);
-// std::string serve_index_page(const std::string& directory_path);
 
 std::string
 HttpResponseHandling::build_response(int status_code,

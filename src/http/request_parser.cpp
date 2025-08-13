@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/13 17:39:52 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/13 19:41:51 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,11 @@ void RequestParser::reset() {
 
 bool RequestParser::parse_request_line(HttpRequest &request,
                                        const std::string &data) {
+  // If we've already successfully parsed the request line, don't parse again
+  if (current_pos > 0 && request.get_state() != PARSING_REQUEST_LINE) {
+    return true;
+  }
+
   std::string line = extract_line(data, current_pos);
   if (line.empty()) {
     return true;
@@ -218,8 +223,16 @@ std::string RequestParser::extract_line(const std::string &data, size_t &pos) {
   if (pos >= data.length()) {
     return "";
   }
+
+  // For request line parsing, limit search scope to prevent finding CRLF in
+  // binary body data
+  size_t search_end = data.length();
+  if (pos == 0) { // Only when parsing the very first line (request line)
+    search_end = std::min(pos + MAX_REQUEST_LINE_LENGTH, data.length());
+  }
+
   size_t crlf_pos = data.find(CRLF, pos);
-  if (crlf_pos == std::string::npos) {
+  if (crlf_pos == std::string::npos || crlf_pos >= search_end) {
     return "";
   }
   std::string line = data.substr(pos, crlf_pos - pos + CRLF.length());

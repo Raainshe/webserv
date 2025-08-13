@@ -1,0 +1,17 @@
+{
+  "message": "API endpoint working",
+  "users": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    {
+      "id": 2,
+      "name": "Jane Smith",
+      "email": "jane@example.com"
+    }
+  ],
+  "timestamp": "2024-08-13T18:00:00Z",
+  "server": "webserv/1.0"
+}

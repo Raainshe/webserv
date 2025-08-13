@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>File Upload - Default webserv</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+	<style>
+		body {
+			background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+			min-height: 100vh;
+		}
+
+		.navbar {
+			background: rgba(0, 0, 0, 0.1) !important;
+		}
+
+		.drag-zone {
+			border: 2px dashed #6c757d;
+			border-radius: 8px;
+			padding: 2rem;
+			text-align: center;
+			transition: all 0.3s ease;
+			background: rgba(255, 255, 255, 0.05);
+		}
+
+		.drag-zone:hover {
+			border-color: #0d6efd;
+			background: rgba(13, 110, 253, 0.1);
+		}
+
+		.drag-zone.dragover {
+			border-color: #198754;
+			background: rgba(25, 135, 84, 0.1);
+		}
+	</style>
+</head>
+
+<body class="text-white">
+	<nav class="navbar navbar-expand-lg navbar-dark">
+		<div class="container">
+			<a class="navbar-brand" href="/">
+				<i class="bi bi-gear-fill"></i> webserv/1.0
+			</a>
+			<span class="navbar-text">
+				<i class="bi bi-cloud-upload"></i> File Upload Center
+			</span>
+		</div>
+	</nav>
+
+	<div class="container mt-5">
+		<div class="row justify-content-center">
+			<div class="col-lg-8">
+				<div class="card bg-dark border-light">
+					<div class="card-header bg-success text-white border-light">
+						<h1 class="card-title mb-0">
+							<i class="bi bi-cloud-upload-fill"></i> Upload Files
+						</h1>
+					</div>
+					<div class="card-body text-white">
+						<div class="alert alert-info border-light" role="alert">
+							<h5 class="alert-heading"><i class="bi bi-info-circle"></i> Upload Information:</h5>
+							<ul class="list-unstyled mb-0">
+								<li><strong>Upload Location:</strong> <code>/upload</code></li>
+								<li><strong>Storage Directory:</strong> <code>test_files/uploads</code></li>
+								<li><strong>Max File Size:</strong> <code>1MB</code></li>
+								<li><strong>Allowed Methods:</strong> <code>POST</code></li>
+							</ul>
+						</div>
+
+						<form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+							<div class="mb-4">
+								<label for="fileInput" class="form-label">
+									<i class="bi bi-file-earmark-plus"></i> Select Files to Upload:
+								</label>
+								<div class="drag-zone" id="dragZone">
+									<div class="mb-3">
+										<i class="bi bi-cloud-upload display-4 text-muted"></i>
+									</div>
+									<p class="mb-2">Drag and drop files here, or click to select</p>
+									<input type="file" class="form-control" id="fileInput" name="files" multiple
+										style="display: none;">
+									<button type="button" class="btn btn-outline-light"
+										onclick="document.getElementById('fileInput').click()">
+										<i class="bi bi-folder2-open"></i> Choose Files
+									</button>
+								</div>
+							</div>
+
+							<div id="fileList" class="mb-3"></div>
+
+							<div class="d-grid gap-2 d-md-flex justify-content-md-start">
+								<button type="submit" class="btn btn-success btn-lg" id="uploadBtn" disabled>
+									<i class="bi bi-cloud-upload"></i> Upload Files
+								</button>
+								<a href="/" class="btn btn-outline-light">
+									<i class="bi bi-house"></i> Back to Home
+								</a>
+							</div>
+						</form>
+
+						<div id="uploadProgress" class="mt-4" style="display: none;">
+							<div class="progress">
+								<div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+									style="width: 0%"></div>
+							</div>
+							<p class="mt-2 text-center"><i class="bi bi-upload"></i> Uploading files...</p>
+						</div>
+
+						<div id="uploadResult" class="mt-4"></div>
+					</div>
+					<div class="card-footer bg-dark border-light text-center text-muted">
+						<small>
+							<i class="bi bi-shield-check"></i> Files are uploaded to: <code>test_files/uploads/</code>
+						</small>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+		const dragZone = document.getElementById('dragZone');
+		const fileInput = document.getElementById('fileInput');
+		const fileList = document.getElementById('fileList');
+		const uploadBtn = document.getElementById('uploadBtn');
+		const uploadForm = document.getElementById('uploadForm');
+		const uploadProgress = document.getElementById('uploadProgress');
+		const uploadResult = document.getElementById('uploadResult');
+
+		// Drag and drop functionality
+		dragZone.addEventListener('dragover', (e) => {
+			e.preventDefault();
+			dragZone.classList.add('dragover');
+		});
+
+		dragZone.addEventListener('dragleave', () => {
+			dragZone.classList.remove('dragover');
+		});
+
+		dragZone.addEventListener('drop', (e) => {
+			e.preventDefault();
+			dragZone.classList.remove('dragover');
+			fileInput.files = e.dataTransfer.files;
+			updateFileList();
+		});
+
+		fileInput.addEventListener('change', updateFileList);
+
+		function updateFileList() {
+			const files = fileInput.files;
+			fileList.innerHTML = '';
+
+			if (files.length > 0) {
+				uploadBtn.disabled = false;
+				const listGroup = document.createElement('div');
+				listGroup.className = 'list-group';
+
+				for (let i = 0; i < files.length; i++) {
+					const file = files[i];
+					const fileItem = document.createElement('div');
+					fileItem.className = 'list-group-item list-group-item-dark d-flex justify-content-between align-items-center';
+					fileItem.innerHTML = `
+                        <div>
+                            <i class="bi bi-file-earmark me-2"></i>
+                            <strong>${file.name}</strong>
+                            <small class="text-muted ms-2">(${formatFileSize(file.size)})</small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">${file.type || 'Unknown'}</span>
+                    `;
+					listGroup.appendChild(fileItem);
+				}
+				fileList.appendChild(listGroup);
+			} else {
+				uploadBtn.disabled = true;
+			}
+		}
+
+		function formatFileSize(bytes) {
+			if (bytes === 0) return '0 Bytes';
+			const k = 1024;
+			const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+			const i = Math.floor(Math.log(bytes) / Math.log(k));
+			return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+		}
+
+		uploadForm.addEventListener('submit', (e) => {
+			e.preventDefault();
+
+			const formData = new FormData();
+			for (let i = 0; i < fileInput.files.length; i++) {
+				formData.append('files', fileInput.files[i]);
+			}
+
+			uploadProgress.style.display = 'block';
+			uploadResult.innerHTML = '';
+			uploadBtn.disabled = true;
+
+			fetch('/upload', {
+				method: 'POST',
+				body: formData
+			})
+				.then(response => {
+					uploadProgress.style.display = 'none';
+					uploadBtn.disabled = false;
+
+					return response.text().then(data => {
+						if (response.ok) {
+							// Success (2xx status codes)
+							uploadResult.innerHTML = `
+								<div class="alert alert-success" role="alert">
+									<h4 class="alert-heading"><i class="bi bi-check-circle"></i> Upload Successful!</h4>
+									<p>Files have been uploaded successfully.</p>
+									<hr>
+									<pre class="mb-0">${data}</pre>
+								</div>
+							`;
+
+							// Reset form
+							fileInput.value = '';
+							updateFileList();
+						} else {
+							// Error status codes (4xx, 5xx)
+							let alertClass = 'alert-danger';
+							let icon = 'bi-x-circle';
+							let title = 'Upload Failed!';
+							let message = 'There was an error uploading your files.';
+
+							// Customize based on specific error codes
+							if (response.status === 413) {
+								alertClass = 'alert-warning';
+								icon = 'bi-exclamation-triangle';
+								title = 'File Too Large!';
+								message = 'The uploaded file exceeds the maximum allowed size (1MB).';
+							} else if (response.status === 415) {
+								alertClass = 'alert-info';
+								icon = 'bi-file-earmark-x';
+								title = 'Unsupported File Type!';
+								message = 'The file type you selected is not supported.';
+							} else if (response.status === 405) {
+								alertClass = 'alert-danger';
+								icon = 'bi-x-octagon';
+								title = 'Method Not Allowed!';
+								message = 'Upload method is not allowed for this endpoint.';
+							}
+
+							uploadResult.innerHTML = `
+								<div class="alert ${alertClass}" role="alert">
+									<h4 class="alert-heading"><i class="bi ${icon}"></i> ${title}</h4>
+									<p>${message}</p>
+									<hr>
+									<p class="mb-0"><strong>Status:</strong> ${response.status}</p>
+									${data.includes('<') ? '' : `<pre class="mt-2 mb-0">${data}</pre>`}
+								</div>
+							`;
+						}
+					});
+				})
+				.catch(error => {
+					uploadProgress.style.display = 'none';
+					uploadBtn.disabled = false;
+
+					uploadResult.innerHTML = `
+                    <div class="alert alert-danger" role="alert">
+                        <h4 class="alert-heading"><i class="bi bi-x-circle"></i> Upload Failed!</h4>
+                        <p>There was an error uploading your files.</p>
+                        <hr>
+                        <p class="mb-0">Error: ${error.message}</p>
+                    </div>
+                `;
+				});
+		});
+	</script>
+</body>
+
+</html>
