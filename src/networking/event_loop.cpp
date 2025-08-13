@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   event_loop.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
+/*   By: hpehliva <hpehliva@student.42heilbronn.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/12 08:54:39 by hpehliva         ###   ########.fr       */
+/*   Updated: 2025/08/13 12:42:15 by hpehliva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -271,7 +271,7 @@ void EventLoop::handle_client_read(int client_fd) {
         response = cgi_handler.execute_cgi(request, *route_result.location, route_result.file_path);
       } else {
         HttpResponseHandling handler(server_config);
-        response = handler.handle_request(request);
+        response = handler.handle_request(request, route_result);
       }
       // HttpResponseHandling handler(server_config);
       // response = handler.handle_request(request);
@@ -365,9 +365,7 @@ void EventLoop::handle_client_read(int client_fd) {
     } else {
       // Build error response according to routing decision
       int code = route_result.http_status_code;
-      std::string message = route_result.error_message.empty()
-                                ? "Error"
-                                : route_result.error_message;
+      std::string message = route_result.error_message.empty() ? "Error" : route_result.error_message;
       response = responder.build_error_response(code, message);
     }
 
