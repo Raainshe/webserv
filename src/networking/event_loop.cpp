@@ -159,11 +159,30 @@ void EventLoop::handle_client_read(int client_fd) {
     if (request.has_error()) {
       std::cout << "HTTP parsing error: " << request.get_error_code() << " - "
                 << request.get_error_message() << std::endl;
+      
+      // Build and send error response before closing connection
+      std::string error_response = "HTTP/1.1 ";
+      error_response += std::to_string(request.get_error_code());
+      error_response += " ";
+      error_response += request.get_error_message();
+      error_response += "\r\n";
+      error_response += "Content-Type: text/plain\r\n";
+      error_response += "Content-Length: ";
+      error_response += std::to_string(request.get_error_message().length());
+      error_response += "\r\n";
+      error_response += "Connection: close\r\n";
+      error_response += "Server: webserv/1.0\r\n";
+      error_response += "\r\n";
+      error_response += request.get_error_message();
+
+      client->clear_buffer();
+      client->append_to_buffer(error_response);
+      client->set_state(WRITING);
+      update_poll_events(client_fd, POLLOUT);
     }
     // Reset client parser state to avoid poisoning subsequent requests
     client->get_request_parser().reset();
     request.clear();
-    remove_client(client_fd);
     return;
   }
 
