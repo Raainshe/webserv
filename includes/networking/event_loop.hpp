@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/13 19:41:51 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/14 13:42:48 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ public:
   // Main event loop
   void run();
   void stop();
+  void shutdown_gracefully();
 
   // Check if the event loop is running
   bool is_running() const;

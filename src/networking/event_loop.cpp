@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/14 12:59:37 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/14 13:42:47 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "../includes/http/http_cgi_handler.hpp"
 #include "webserv.hpp" // IWYU pragma: keep
 #include <algorithm>
+#include <ctime> // for time()
 
 EventLoop::EventLoop(SocketManager &sm, time_t timeout)
     : socket_manager(sm), running(false), timeout_seconds(timeout) {}
@@ -71,6 +72,95 @@ void EventLoop::run() {
 }
 
 void EventLoop::stop() { running = false; }
+
+void EventLoop::shutdown_gracefully() {
+  std::cout << "Beginning graceful shutdown..." << std::endl;
+
+  // Stop accepting new connections
+  running = false;
+
+  // Send "Connection: close" responses to all active clients
+  std::cout << "Closing " << clients.size() << " active client connections..."
+            << std::endl;
+
+  for (std::map<int, ClientConnection *>::iterator it = clients.begin();
+       it != clients.end(); ++it) {
+    int client_fd = it->first;
+    ClientConnection *client = it->second;
+
+    // If client has pending data to write, let it finish
+    if (client->get_state() == WRITING && !client->get_buffer().empty()) {
+      // Send a brief "server shutting down" message after current response
+      std::string shutdown_msg = "\r\n<!-- Server shutting down -->\r\n";
+      client->append_to_buffer(shutdown_msg);
+    } else if (client->get_state() == READING) {
+      // Send a graceful shutdown response
+      std::string shutdown_response = "HTTP/1.1 503 Service Unavailable\r\n"
+                                      "Content-Type: text/plain\r\n"
+                                      "Content-Length: 26\r\n"
+                                      "Connection: close\r\n"
+                                      "Server: webserv/1.0\r\n"
+                                      "\r\n"
+                                      "Server is shutting down...";
+
+      client->clear_buffer();
+      client->append_to_buffer(shutdown_response);
+      client->set_state(WRITING);
+    }
+
+    std::cout << "Notifying client " << client_fd << " of shutdown"
+              << std::endl;
+  }
+
+  // Give clients a brief moment to receive shutdown messages
+  std::cout << "Allowing time for client notifications..." << std::endl;
+
+  // Process any pending writes for a short time
+  time_t shutdown_start = time(NULL);
+  while (time(NULL) - shutdown_start < 2 && !clients.empty()) {
+    int poll_result = poll(&poll_fds[0], poll_fds.size(), 100); // 100ms timeout
+
+    if (poll_result > 0) {
+      // Handle only POLLOUT events to send shutdown messages
+      for (size_t i = 0; i < poll_fds.size() && poll_result > 0; ++i) {
+        if (poll_fds[i].revents & POLLOUT) {
+          handle_client_write(poll_fds[i].fd);
+          poll_result--;
+        }
+      }
+    }
+
+    // Remove clients that have finished sending their shutdown messages
+    std::vector<int> finished_clients;
+    for (std::map<int, ClientConnection *>::iterator it = clients.begin();
+         it != clients.end(); ++it) {
+      if (it->second->get_buffer().empty()) {
+        finished_clients.push_back(it->first);
+      }
+    }
+
+    for (std::vector<int>::iterator it = finished_clients.begin();
+         it != finished_clients.end(); ++it) {
+      remove_client(*it);
+    }
+  }
+
+  // Force close any remaining clients
+  std::vector<int> remaining_clients;
+  for (std::map<int, ClientConnection *>::iterator it = clients.begin();
+       it != clients.end(); ++it) {
+    remaining_clients.push_back(it->first);
+  }
+
+  for (std::vector<int>::iterator it = remaining_clients.begin();
+       it != remaining_clients.end(); ++it) {
+    std::cout << "Force closing client " << *it << std::endl;
+    remove_client(*it);
+  }
+
+  std::cout << "All client connections closed." << std::endl;
+  std::cout << "Graceful shutdown completed." << std::endl;
+}
 
 bool EventLoop::is_running() const { return running; }
 
