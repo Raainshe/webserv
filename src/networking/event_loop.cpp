@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/13 19:41:51 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/14 12:59:37 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,7 +159,7 @@ void EventLoop::handle_client_read(int client_fd) {
     if (request.has_error()) {
       std::cout << "HTTP parsing error: " << request.get_error_code() << " - "
                 << request.get_error_message() << std::endl;
-      
+
       // Build and send error response before closing connection
       std::string error_response = "HTTP/1.1 ";
       error_response += std::to_string(request.get_error_code());

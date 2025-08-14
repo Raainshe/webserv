@@ -4,7 +4,7 @@ WEBSERV EVALUATION ANSWERS
 1. BASICS OF AN HTTP SERVER:
 An HTTP server is a program that listens for incoming HTTP requests from clients (browsers) and responds with appropriate HTTP responses. It handles:
 - TCP socket connections on specific ports
-- HTTP request parsing (method, URI, headers, body)  
+- HTTP request parsing (method, URI, headers, body)
 - Static file serving and dynamic content generation
 - HTTP response formatting with status codes, headers, and body
 - Connection management and multiplexing
@@ -57,7 +57,7 @@ CGI write() error handling (lines 243-252):
 ✓ GOOD - Return values are properly checked:
 - recv(): checks <= 0 (both error and EOF)
 - send(): checks < 0 (error) and partial sends
-- read(): checks > 0, == 0 (EOF), < 0 (error)  
+- read(): checks > 0, == 0 (EOF), < 0 (error)
 - write(): checks < 0 (error) and == 0 (no data written)
 
 9. ERRNO CHECKING AFTER SOCKET OPERATIONS:
@@ -182,6 +182,20 @@ curl -v -X DELETE http://localhost:8080/upload/testfile.txt
 
 # Clean up local test file
 rm testfile.txt
+
+SIEGE TESTING SERVER:
+---------------------
+# 50 concurrent users
+siege -c 50 http://localhost:8080
+
+# Run for 1 minute
+siege -t 1M http://localhost:8080
+
+# 100 concurrent users and run for 1 minute
+siege -c 100 -t 1M http://localhost:8080
+
+# Benchmark mode
+siege -b -c 100 -t 30S http://localhost:8080
 
 6. STATUS CODE VERIFICATION:
 ---------------------------
