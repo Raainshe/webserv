@@ -95,8 +95,6 @@ make re
 ### Basic Usage
 
 ```bash
-# Run with default configuration
-./webserv
 
 # Run with custom configuration file
 ./webserv configs/custom.conf
