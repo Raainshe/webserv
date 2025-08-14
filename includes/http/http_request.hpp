@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/11 13:09:20 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/14 13:53:44 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,6 @@ private:
   std::string query_string;
   std::string path;
 
-  // Error tracking
   int error_code;
   std::string error_message;
 

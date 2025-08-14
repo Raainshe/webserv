@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 10:28:57 by hpehliva          #+#    #+#             */
-/*   Updated: 2025/08/13 13:46:17 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/14 13:58:21 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,11 +25,13 @@ std::string CgiHandler::execute_cgi(const HttpRequest &request,
                                     const std::string &script_path) {
   std::cout << "Executing CGI script: " << location.cgi_pass << " "
             << script_path << std::endl;
-  // Check if script axists
+
+  // Check if script exists
   if (access(script_path.c_str(), F_OK) == -1) {
     std::cerr << "CGI script not found: " << script_path << std::endl;
     return create_cgi_errror(404, "CGI script not found");
   }
+
   // Check if script is executable
   if (access(script_path.c_str(), X_OK) == -1) {
     std::cerr << "CGI script is not executable: " << script_path << std::endl;
@@ -91,7 +93,7 @@ std::vector<std::string>
 CgiHandler::build_cgi_environment(const HttpRequest &request,
                                   const LocationConfig &location,
                                   const std::string &script_path) {
-  (void)location; // Unused variable, but can be used for future extensions
+  (void)location;
   std::vector<std::string> env_vars;
 
   std::string method_str;
@@ -153,7 +155,7 @@ char **CgiHandler::create_env_array(const std::vector<std::string> &env_vars) {
     env_array[i] = new char[env_vars[i].length() + 1];
     std::strcpy(env_array[i], env_vars[i].c_str());
   }
-  env_array[env_vars.size()] = NULL; // Null-terminate the array
+  env_array[env_vars.size()] = NULL;
   return env_array;
 }
 void CgiHandler::cleanup_env_array(char **env_array, size_t size) {
@@ -202,7 +204,7 @@ std::string CgiHandler::read_cgi_output(int output_fd, pid_t cgi_pid) {
   std::string output;
   char buffer[BUFFER_SIZE];
 
-  // set none-blocking mode for reading
+  // set non-blocking mode for reading
   int flags = fcntl(output_fd, F_GETFL, 0);
   fcntl(output_fd, F_SETFL, flags | O_NONBLOCK);
   time_t start_time = time(NULL);
@@ -211,11 +213,10 @@ std::string CgiHandler::read_cgi_output(int output_fd, pid_t cgi_pid) {
     ssize_t bytes_read = read(output_fd, buffer, sizeof(buffer) - 1);
 
     if (bytes_read > 0) {
-      buffer[bytes_read] = '\0'; // Null-terminate the buffer
+      buffer[bytes_read] = '\0';
       output += buffer;
       start_time = time(NULL);
     } else if (bytes_read == 0) {
-      // EOF reached, break the loop
       break;
     } else if (errno != EAGAIN && errno != EWOULDBLOCK) {
       std::cerr << "Error reading CGI output: " << strerror(errno) << std::endl;
@@ -242,8 +243,6 @@ void CgiHandler::write_cgi_input(int input_fd, const std::string &input_data) {
 
     if (bytes_written < 0) {
       if (errno == EAGAIN || errno == EWOULDBLOCK) {
-        // Non-blocking write, wait and try again
-        // usleep(10000); // 10ms
         continue;
       } else {
         std::cerr << "Error writing to CGI input: " << strerror(errno)
@@ -251,7 +250,6 @@ void CgiHandler::write_cgi_input(int input_fd, const std::string &input_data) {
         return;
       }
     } else if (bytes_written == 0) {
-      // No more data to write
       break;
     }
     total_written += bytes_written;
@@ -280,7 +278,7 @@ std::string CgiHandler::build_http_response(const std::string &cgi_output) {
   std::string headers = cgi_output.substr(0, header_end);
   std::string body = cgi_output.substr(header_end);
 
-  // PArse CGI headers
+  // Parse CGI headers
   bool has_status = false;
   bool has_content_type = false;
   std::string status = "200 OK";
@@ -311,11 +309,11 @@ std::string CgiHandler::build_http_response(const std::string &cgi_output) {
         has_status = true;
       } else if (header_name == "Content-Type" ||
                  header_name == "Content-type") {
-        // content_type = header_value;
         has_content_type = true;
       }
     }
   }
+
   // Build HTTP response
   std::ostringstream response;
   if (!has_status) {

@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/14 13:42:47 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/14 14:03:55 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -235,7 +235,6 @@ void EventLoop::handle_client_read(int client_fd) {
     return;
   }
 
-  // Null-terminate the buffer
   buffer[bytes_read] = '\0';
 
   // Append to client's buffer
@@ -322,7 +321,7 @@ void EventLoop::handle_client_read(int client_fd) {
   if (request.is_complete()) {
     std::cout << "HTTP request completed: " << request.get_method() << " "
               << request.get_uri() << std::endl;
-    // Step 10: Multiple Servers/Ports - Select correct server config
+
     const ServerConfig *server_config = select_server_config(client, request);
     if (!server_config) {
       // Server selection failed - send 500 error
@@ -371,7 +370,6 @@ void EventLoop::handle_client_read(int client_fd) {
       return;
     }
 
-    // Step 7: Routing and Methods - Route the request
     RouteResult route_result = router.route_request(*server_config, request);
 
     std::string response;
@@ -398,7 +396,6 @@ void EventLoop::handle_client_read(int client_fd) {
     client->append_to_buffer(response);
     client->set_state(WRITING);
     update_poll_events(client_fd, POLLOUT);
-    // Reset parser for next request
     client->get_request_parser().reset();
     request.clear();
   }

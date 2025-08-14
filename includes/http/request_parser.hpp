@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/13 14:14:29 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/14 13:54:34 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,10 +72,10 @@ private:
   void set_parse_error(HttpRequest &request, int code,
                        const std::string &message);
 
-  // Chunked encoding parsing (for step 8 - CGI support)
+  // Chunked encoding parsing
   bool parse_chunked_body(HttpRequest &request, const std::string &data);
 
-  // Multipart parsing (for step 9 - file uploads)
+  // Multipart parsing
   bool parse_multipart_body(HttpRequest &request, const std::string &data);
   bool parse_multipart_part(HttpRequest &request,
                             const std::string &part_headers,

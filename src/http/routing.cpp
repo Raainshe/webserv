@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 15:45:00 by ksinn             #+#    #+#             */
-/*   Updated: 2025/08/11 16:02:10 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/14 14:02:24 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ RouteResult Router::route_request(const ServerConfig &server,
   result.file_path = resolve_file_path(*location, uri);
   std::cout << "Resolved file path: " << result.file_path << std::endl;
 
-  // For CGI requests, don't require file existence - let step 8 handle it
+  // For CGI requests, don't require file existence
   if (result.is_cgi_request) {
     std::cout << "CGI request detected - skipping file existence check"
               << std::endl;
@@ -133,7 +133,7 @@ RouteResult Router::route_request(const ServerConfig &server,
     }
   } else {
     std::cout << "Path does not exist: " << result.file_path << std::endl;
-    // For non-existent files, let step 6 (HTTP Response Handling) decide
+    // For non-existent files, let HTTP Response Handling decide
     // This allows for dynamic content, custom 404 pages, etc.
     result.is_directory = false;
     result.should_list_directory = false;

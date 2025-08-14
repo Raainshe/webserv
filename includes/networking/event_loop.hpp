@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2025/08/14 13:42:48 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/14 13:55:15 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ private:
   bool running;
   time_t timeout_seconds;
   Router router;
-  // Response builder (constructed per-request in .cpp as it depends on server)
 
   // Maximum buffer size for reading
   static const size_t MAX_BUFFER_SIZE = 8192;
@@ -74,7 +73,7 @@ private:
   bool is_server_socket(int fd) const;
   void log_error(const std::string &message);
 
-  // Server selection for multiple servers/ports (Step 10)
+  // Server selection for multiple servers/ports
   const ServerConfig *select_server_config(ClientConnection *client,
                                            const HttpRequest &request);
 };

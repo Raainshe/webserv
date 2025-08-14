@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/08 00:12:53 by hpehliva          #+#    #+#             */
-/*   Updated: 2025/08/09 14:31:51 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/14 13:54:12 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,15 +36,10 @@ private:
                                   const RouteResult &route_result);
   std::string handle_delete_request(const HttpRequest &request,
                                     const RouteResult &route_result);
-  // put request is not implemented yet
-  // head request is not implemented yet
 
   std::string serve_file(const std::string &file_path);
   std::string serve_directory_listing(const std::string &directory_path,
                                       const std::string &uri);
-  // std::string serve_cgi(const HttpRequest& request);
-  // std::string serve_redirect(const std::string& redirect_url);
-  // std::string serve_default_page(const std::string& directory_path);
 
   std::string build_response(int status_code, const std::string &content_type,
                              const std::string &content);

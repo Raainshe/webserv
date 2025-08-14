@@ -43,7 +43,6 @@ OBJS = \
 # Compiler and flags
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++17 -I$(INC_DIR)
-DEBUG_FLAGS = -g -O0
 
 # Colors
 GREEN = \033[0;32m
@@ -84,10 +83,6 @@ $(NAME): $(OBJS)
 	@echo "$(GREEN)$(NAME) built successfully!$(NC)"
 	@echo "$(GREEN)Run with ./webserv <config_file>$(NC)"
 
-debug: CXXFLAGS += $(DEBUG_FLAGS)
-debug: fclean $(NAME)
-	@echo "$(GREEN)$(NAME) built with debug flags!$(NC)"
-
 clean:
 	@echo "$(PURPLE)Cleaning object files...$(NC)"
 	@rm -rf $(OUT_DIR)
@@ -112,41 +107,5 @@ help:
 	@echo "  fclean  - Remove object files and executables"
 	@echo "  re      - Rebuild everything"
 	@echo "  help    - Show this help message"
-
-# Test target for tokenizer
-TEST_TOKENIZER_SRC = src/parsing/test_tokenizer.cpp src/parsing/tokenizer.cpp
-TEST_TOKENIZER_OBJ = $(patsubst src/%.cpp,$(OUT_DIR)/%.o,$(TEST_TOKENIZER_SRC))
-
-test_tokenizer: $(OUT_DIR) $(TEST_TOKENIZER_OBJ)
-	@echo "$(YELLOW)Linking test_tokenizer...$(NC)"
-	@$(CXX) $(CXXFLAGS) $(TEST_TOKENIZER_OBJ) -o test_tokenizer
-	@echo "$(GREEN)test_tokenizer built successfully!$(NC)"
-
-run_test_tokenizer: test_tokenizer
-	@./test_tokenizer
-
-# Test target for parser
-TEST_PARSER_SRC = src/parsing/test_parser.cpp src/parsing/parser.cpp src/parsing/tokenizer.cpp
-TEST_PARSER_OBJ = $(patsubst src/%.cpp,$(OUT_DIR)/%.o,$(TEST_PARSER_SRC))
-
-test_parser: $(OUT_DIR) $(TEST_PARSER_OBJ)
-	@echo "$(YELLOW)Linking test_parser...$(NC)"
-	@$(CXX) $(CXXFLAGS) $(TEST_PARSER_OBJ) -o test_parser
-	@echo "$(GREEN)test_parser built successfully!$(NC)"
-
-run_test_parser: test_parser
-	@./test_parser
-
-# Test target for error handling
-TEST_ERROR_HANDLING_SRC = src/parsing/test_error_handling.cpp src/parsing/parser.cpp src/parsing/tokenizer.cpp
-TEST_ERROR_HANDLING_OBJ = $(patsubst src/%.cpp,$(OUT_DIR)/%.o,$(TEST_ERROR_HANDLING_SRC))
-
-test_error_handling: $(OUT_DIR) $(TEST_ERROR_HANDLING_OBJ)
-	@echo "$(YELLOW)Linking test_error_handling...$(NC)"
-	@$(CXX) $(CXXFLAGS) $(TEST_ERROR_HANDLING_OBJ) -o test_error_handling
-	@echo "$(GREEN)test_error_handling built successfully!$(NC)"
-
-run_test_error_handling: test_error_handling
-	@./test_error_handling
 
 .PHONY: all clean fclean re debug help test_tokenizer run_test_tokenizer test_parser run_test_parser test_error_handling run_test_error_handling

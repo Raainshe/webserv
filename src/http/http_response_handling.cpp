@@ -6,7 +6,7 @@
 /*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/08 00:12:38 by hpehliva          #+#    #+#             */
-/*   Updated: 2025/08/13 18:53:20 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/14 13:59:47 by ksinn            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,8 +182,6 @@ HttpResponseHandling::handle_post_request(const HttpRequest &request,
   std::string body = "POST request received successfully!";
   return build_response(200, "text/plain", body);
 }
-// put request is not implemented yet
-// head request is not implemented yet
 
 std::string
 HttpResponseHandling::handle_delete_request(const HttpRequest &request,
