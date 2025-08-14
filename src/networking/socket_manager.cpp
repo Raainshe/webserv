@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   socket_manager.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksinn <ksinn@student.42heilbronn.de>       +#+  +:+       +#+        */
+/*   By: rmakoni <rmakoni@student.42heilbronn.de    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/03 13:28:00 by rmakoni           #+#    #+#             */
-/*   Updated: 2025/08/09 16:36:18 by ksinn            ###   ########.fr       */
+/*   Updated: 2025/08/14 09:54:52 by rmakoni          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/networking/socket_manager.hpp"
 #include <cerrno>
 #include <cstring>
+#include <set>
 
 SocketManager::SocketManager() : initialized(false) {}
 
