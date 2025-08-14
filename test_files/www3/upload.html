@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>File Upload - Default webserv</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+	<style>
+		body {
+			background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+			min-height: 100vh;
+		}
+
+		.navbar {
+			background: rgba(0, 0, 0, 0.1) !important;
+		}
+
+		.drag-zone {
+			border: 2px dashed #6c757d;
+			border-radius: 8px;
+			padding: 2rem;
+			text-align: center;
+			transition: all 0.3s ease;
+			background: rgba(255, 255, 255, 0.05);
+		}
+
+		.drag-zone:hover {
+			border-color: #0d6efd;
+			background: rgba(13, 110, 253, 0.1);
+		}
+
+		.drag-zone.dragover {
+			border-color: #198754;
+			background: rgba(25, 135, 84, 0.1);
+		}
+	</style>
+</head>
+
+<body class="text-white">
+	<nav class="navbar navbar-expand-lg navbar-dark">
+		<div class="container">
+			<a class="navbar-brand" href="/">
+				<i class="bi bi-gear-fill"></i> webserv/1.0
+			</a>
+			<span class="navbar-text">
+				<i class="bi bi-cloud-upload"></i> File Upload Center
+			</span>
+		</div>
+	</nav>
+
+	<div class="container mt-5">
+		<div class="row justify-content-center">
+			<div class="col-lg-8">
+				<div class="card bg-dark border-light">
+					<div class="card-header bg-success text-white border-light">
+						<h1 class="card-title mb-0">
+							<i class="bi bi-cloud-upload-fill"></i> Upload Files
+						</h1>
+					</div>
+					<div class="card-body text-white">
+						<div class="alert alert-info border-light" role="alert">
+							<h5 class="alert-heading"><i class="bi bi-info-circle"></i> Upload Information:</h5>
+							<ul class="list-unstyled mb-0">
+								<li><strong>Upload Location:</strong> <code>/upload</code></li>
+								<li><strong>Storage Directory:</strong> <code>test_files/uploads</code></li>
+								<li><strong>Max File Size:</strong> <code>1MB</code></li>
+								<li><strong>Allowed Methods:</strong> <code>GET, POST, DELETE</code></li>
+							</ul>
+						</div>
+
+						<form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+							<div class="mb-4">
+								<label for="fileInput" class="form-label">
+									<i class="bi bi-file-earmark-plus"></i> Select Files to Upload:
+								</label>
+								<div class="drag-zone" id="dragZone">
+									<div class="mb-3">
+										<i class="bi bi-cloud-upload display-4 text-muted"></i>
+									</div>
+									<p class="mb-2">Drag and drop files here, or click to select</p>
+									<input type="file" class="form-control" id="fileInput" name="files" multiple
+										style="display: none;">
+									<button type="button" class="btn btn-outline-light"
+										onclick="document.getElementById('fileInput').click()">
+										<i class="bi bi-folder2-open"></i> Choose Files
+									</button>
+								</div>
+							</div>
+
+							<div id="fileList" class="mb-3"></div>
+
+							<div class="d-grid gap-2 d-md-flex justify-content-md-start">
+								<button type="submit" class="btn btn-success btn-lg" id="uploadBtn" disabled>
+									<i class="bi bi-cloud-upload"></i> Upload Files
+								</button>
+								<a href="/" class="btn btn-outline-light">
+									<i class="bi bi-house"></i> Back to Home
+								</a>
+							</div>
+						</form>
+
+						<div id="uploadProgress" class="mt-4" style="display: none;">
+							<div class="progress">
+								<div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+									style="width: 0%"></div>
+							</div>
+							<p class="mt-2 text-center"><i class="bi bi-upload"></i> Uploading files...</p>
+						</div>
+
+						<div id="uploadResult" class="mt-4"></div>
+
+						<!-- File Management Section -->
+						<div class="mt-5">
+							<div class="d-flex justify-content-between align-items-center mb-3">
+								<h3><i class="bi bi-files"></i> Manage Uploaded Files</h3>
+								<div>
+									<button type="button" class="btn btn-outline-light btn-sm me-2"
+										onclick="toggleManualDelete()">
+										<i class="bi bi-pencil"></i> Manual Delete
+									</button>
+									<button type="button" class="btn btn-outline-light btn-sm"
+										onclick="loadUploadedFiles()">
+										<i class="bi bi-arrow-clockwise"></i> Refresh
+									</button>
+								</div>
+							</div>
+
+							<!-- Manual Delete Input (hidden by default) -->
+							<div id="manualDeleteSection" class="mb-3" style="display: none;">
+								<div class="card bg-dark border-warning">
+									<div class="card-body">
+										<h6 class="card-title text-warning">
+											<i class="bi bi-exclamation-triangle"></i> Manual File Delete
+										</h6>
+										<p class="card-text small">If auto-detection doesn't work, enter the filename
+											manually:</p>
+										<div class="input-group">
+											<input type="text" class="form-control" id="manualFilename"
+												placeholder="e.g., example.txt">
+											<button class="btn btn-outline-danger" type="button"
+												onclick="deleteManualFile()">
+												<i class="bi bi-trash"></i> Delete
+											</button>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div id="fileManagement">
+								<div class="text-center text-muted">
+									<i class="bi bi-folder2-open display-4"></i>
+									<p class="mt-2">Click "Refresh" to load uploaded files</p>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="card-footer bg-dark border-light text-center text-muted">
+						<small>
+							<i class="bi bi-shield-check"></i> Files are uploaded to: <code>test_files/uploads/</code>
+						</small>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+		const dragZone = document.getElementById('dragZone');
+		const fileInput = document.getElementById('fileInput');
+		const fileList = document.getElementById('fileList');
+		const uploadBtn = document.getElementById('uploadBtn');
+		const uploadForm = document.getElementById('uploadForm');
+		const uploadProgress = document.getElementById('uploadProgress');
+		const uploadResult = document.getElementById('uploadResult');
+
+		// Drag and drop functionality
+		dragZone.addEventListener('dragover', (e) => {
+			e.preventDefault();
+			dragZone.classList.add('dragover');
+		});
+
+		dragZone.addEventListener('dragleave', () => {
+			dragZone.classList.remove('dragover');
+		});
+
+		dragZone.addEventListener('drop', (e) => {
+			e.preventDefault();
+			dragZone.classList.remove('dragover');
+			fileInput.files = e.dataTransfer.files;
+			updateFileList();
+		});
+
+		fileInput.addEventListener('change', updateFileList);
+
+		function updateFileList() {
+			const files = fileInput.files;
+			fileList.innerHTML = '';
+
+			if (files.length > 0) {
+				uploadBtn.disabled = false;
+				const listGroup = document.createElement('div');
+				listGroup.className = 'list-group';
+
+				for (let i = 0; i < files.length; i++) {
+					const file = files[i];
+					const fileItem = document.createElement('div');
+					fileItem.className = 'list-group-item list-group-item-dark d-flex justify-content-between align-items-center';
+					fileItem.innerHTML = `
+                        <div>
+                            <i class="bi bi-file-earmark me-2"></i>
+                            <strong>${file.name}</strong>
+                            <small class="text-muted ms-2">(${formatFileSize(file.size)})</small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">${file.type || 'Unknown'}</span>
+                    `;
+					listGroup.appendChild(fileItem);
+				}
+				fileList.appendChild(listGroup);
+			} else {
+				uploadBtn.disabled = true;
+			}
+		}
+
+		function formatFileSize(bytes) {
+			if (bytes === 0) return '0 Bytes';
+			const k = 1024;
+			const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+			const i = Math.floor(Math.log(bytes) / Math.log(k));
+			return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+		}
+
+		uploadForm.addEventListener('submit', (e) => {
+			e.preventDefault();
+
+			const formData = new FormData();
+			for (let i = 0; i < fileInput.files.length; i++) {
+				formData.append('files', fileInput.files[i]);
+			}
+
+			uploadProgress.style.display = 'block';
+			uploadResult.innerHTML = '';
+			uploadBtn.disabled = true;
+
+			fetch('/upload', {
+				method: 'POST',
+				body: formData
+			})
+				.then(response => {
+					uploadProgress.style.display = 'none';
+					uploadBtn.disabled = false;
+
+					return response.text().then(data => {
+						if (response.ok) {
+							// Success (2xx status codes)
+							uploadResult.innerHTML = `
+								<div class="alert alert-success" role="alert">
+									<h4 class="alert-heading"><i class="bi bi-check-circle"></i> Upload Successful!</h4>
+									<p>Files have been uploaded successfully.</p>
+									<hr>
+									<pre class="mb-0">${data}</pre>
+								</div>
+							`;
+
+							// Reset form
+							fileInput.value = '';
+							updateFileList();
+
+							// Refresh uploaded files list
+							setTimeout(loadUploadedFiles, 500);
+						} else {
+							// Error status codes (4xx, 5xx)
+							let alertClass = 'alert-danger';
+							let icon = 'bi-x-circle';
+							let title = 'Upload Failed!';
+							let message = 'There was an error uploading your files.';
+
+							// Customize based on specific error codes
+							if (response.status === 413) {
+								alertClass = 'alert-warning';
+								icon = 'bi-exclamation-triangle';
+								title = 'File Too Large!';
+								message = 'The uploaded file exceeds the maximum allowed size (1MB).';
+							} else if (response.status === 415) {
+								alertClass = 'alert-info';
+								icon = 'bi-file-earmark-x';
+								title = 'Unsupported File Type!';
+								message = 'The file type you selected is not supported.';
+							} else if (response.status === 405) {
+								alertClass = 'alert-danger';
+								icon = 'bi-x-octagon';
+								title = 'Method Not Allowed!';
+								message = 'Upload method is not allowed for this endpoint.';
+							}
+
+							uploadResult.innerHTML = `
+								<div class="alert ${alertClass}" role="alert">
+									<h4 class="alert-heading"><i class="bi ${icon}"></i> ${title}</h4>
+									<p>${message}</p>
+									<hr>
+									<p class="mb-0"><strong>Status:</strong> ${response.status}</p>
+									${data.includes('<') ? '' : `<pre class="mt-2 mb-0">${data}</pre>`}
+								</div>
+							`;
+						}
+					});
+				})
+				.catch(error => {
+					uploadProgress.style.display = 'none';
+					uploadBtn.disabled = false;
+
+					uploadResult.innerHTML = `
+                    <div class="alert alert-danger" role="alert">
+                        <h4 class="alert-heading"><i class="bi bi-x-circle"></i> Upload Failed!</h4>
+                        <p>There was an error uploading your files.</p>
+                        <hr>
+                        <p class="mb-0">Error: ${error.message}</p>
+                    </div>
+                `;
+				});
+		});
+
+		// File management functions
+		function loadUploadedFiles() {
+			const fileManagement = document.getElementById('fileManagement');
+
+			// Show loading state
+			fileManagement.innerHTML = `
+				<div class="text-center text-muted">
+					<div class="spinner-border text-light" role="status">
+						<span class="visually-hidden">Loading...</span>
+					</div>
+					<p class="mt-2">Checking permissions and loading files...</p>
+				</div>
+			`;
+
+			fetch('/upload', {
+				method: 'GET',
+				headers: {
+					'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+				}
+			})
+				.then(response => {
+					console.log('Server response status:', response.status);
+
+					// Check for permission-related errors first
+					if (response.status === 405) {
+						// Method Not Allowed - GET not supported on this endpoint
+						fileManagement.innerHTML = `
+							<div class="alert alert-warning" role="alert">
+								<h5 class="alert-heading"><i class="bi bi-shield-x"></i> Permission Denied</h5>
+								<p>This server does not allow listing uploaded files (GET method not permitted on /upload).</p>
+								<hr>
+								<p class="mb-0"><strong>Server Status:</strong> 405 Method Not Allowed</p>
+								<small class="text-muted">You can still upload files, but cannot view the current file list.</small>
+							</div>
+						`;
+						return null; // Don't continue processing
+					} else if (response.status === 403) {
+						// Forbidden - Access denied
+						fileManagement.innerHTML = `
+							<div class="alert alert-danger" role="alert">
+								<h5 class="alert-heading"><i class="bi bi-shield-slash"></i> Access Forbidden</h5>
+								<p>You don't have permission to access the uploaded files directory.</p>
+								<hr>
+								<p class="mb-0"><strong>Server Status:</strong> 403 Forbidden</p>
+								<small class="text-muted">Contact the administrator if you believe this is an error.</small>
+							</div>
+						`;
+						return null; // Don't continue processing
+					} else if (response.status === 404) {
+						// Not Found - Upload endpoint doesn't exist
+						fileManagement.innerHTML = `
+							<div class="alert alert-info" role="alert">
+								<h5 class="alert-heading"><i class="bi bi-folder-x"></i> Upload Directory Not Found</h5>
+								<p>The upload directory or endpoint is not available on this server.</p>
+								<hr>
+								<p class="mb-0"><strong>Server Status:</strong> 404 Not Found</p>
+								<small class="text-muted">File upload functionality may not be configured on this server.</small>
+							</div>
+						`;
+						return null; // Don't continue processing
+					} else if (!response.ok) {
+						// Other error status codes
+						fileManagement.innerHTML = `
+							<div class="alert alert-danger" role="alert">
+								<h5 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Server Error</h5>
+								<p>The server returned an unexpected error when trying to list files.</p>
+								<hr>
+								<p class="mb-0"><strong>Server Status:</strong> ${response.status} ${response.statusText}</p>
+								<small class="text-muted">Try refreshing the page or contact the administrator.</small>
+							</div>
+						`;
+						return null; // Don't continue processing
+					}
+
+					// If we get here, response is OK (2xx status)
+					return response.text();
+				})
+				.then(data => {
+					// Only process data if response was successful
+					if (data === null) return;
+
+					console.log('Server response data:', data);
+
+					if (data && data.trim()) {
+						// Parse the autoindex listing or file data
+						displayFileList(data);
+					} else {
+						fileManagement.innerHTML = `
+							<div class="alert alert-info" role="alert">
+								<i class="bi bi-inbox"></i> No files uploaded yet.
+								<hr>
+								<small class="text-muted">Files uploaded to this server will appear here.</small>
+							</div>
+						`;
+					}
+				})
+				.catch(error => {
+					console.error('Error loading files:', error);
+					fileManagement.innerHTML = `
+						<div class="alert alert-danger" role="alert">
+							<h5 class="alert-heading"><i class="bi bi-wifi-off"></i> Connection Error</h5>
+							<p>Unable to connect to the server to load uploaded files.</p>
+							<hr>
+							<p class="mb-0"><strong>Error:</strong> ${error.message}</p>
+							<small class="text-muted">Check your connection and try again, or check the browser console for more details.</small>
+						</div>
+					`;
+				});
+		}
+
+		function displayFileList(data) {
+			const fileManagement = document.getElementById('fileManagement');
+			let files = [];
+
+			console.log('Attempting to parse file list from response...');
+			console.log('Raw response preview:', data.substring(0, 500));
+
+			// Try multiple parsing strategies
+
+			// Strategy 1: HTML autoindex with <a> tags (nginx/apache style)
+			const htmlLinkRegex = /<a[^>]*href="([^"]+)"[^>]*>([^<]+)<\/a>/g;
+			let match;
+			let rawMatches = [];
+			while ((match = htmlLinkRegex.exec(data)) !== null) {
+				const href = match[1];
+				const linkText = match[2].trim();
+				rawMatches.push({ href, linkText });
+
+				// Try both href and link text as potential filenames
+				const candidates = [href, linkText];
+
+				for (const candidate of candidates) {
+					// Clean up the candidate
+					let filename = candidate.replace(/\/$/, ''); // Remove trailing slash
+					filename = filename.replace(/^.*\//, ''); // Get just the filename part
+
+					if (filename !== '../' && filename !== './' && filename !== '/' && filename.trim() !== '') {
+						files.push(filename);
+					}
+				}
+			}
+
+			console.log('Raw HTML matches found:', rawMatches);
+
+			// Strategy 2: Try simple text-based listing (one file per line)
+			if (files.length === 0) {
+				const lines = data.split('\n').filter(line => line.trim());
+				for (const line of lines) {
+					// Skip common directory listing elements
+					if (line.includes('..') || line.includes('Index of') || line.includes('<html') ||
+						line.includes('<head') || line.includes('<body') || line.length < 1) {
+						continue;
+					}
+
+					// Extract filename from various formats
+					let filename = line.trim();
+
+					// Remove HTML tags if present
+					filename = filename.replace(/<[^>]*>/g, '');
+
+					// Remove timestamps, sizes, and other metadata (common patterns)
+					filename = filename.replace(/\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}.*/, '');
+					filename = filename.replace(/\d+\s+bytes?.*/, '');
+					filename = filename.replace(/\s+\d+\s*$/, '');
+
+					filename = filename.trim();
+
+					if (filename && filename.length > 0) {
+						files.push(filename);
+					}
+				}
+			}
+
+			// Helper function to check if a string looks like a valid filename
+			function isValidFilename(filename) {
+				console.log(`Testing filename: "${filename}"`);
+
+				// Skip empty strings
+				if (!filename || filename.trim().length === 0) {
+					console.log(`  → Rejected: empty string`);
+					return false;
+				}
+
+				// Skip URLs and paths
+				if (filename.includes('://') || filename.startsWith('http') || filename.startsWith('https')) {
+					console.log(`  → Rejected: contains URL protocol`);
+					return false;
+				}
+				if (filename.includes('/upload/')) {
+					console.log(`  → Rejected: contains /upload/ path`);
+					return false;
+				}
+				if (filename.startsWith('/') && filename.length > 1) {
+					console.log(`  → Rejected: starts with slash`);
+					return false;
+				}
+
+				// Skip HTML/CSS/JS related content
+				if (filename.includes('bootstrap') || filename.includes('cdn.') || filename.includes('.min.')) {
+					console.log(`  → Rejected: contains web framework content`);
+					return false;
+				}
+				if (filename.includes('initial-scale') || filename.includes('viewport') || filename.includes('webserv/')) {
+					console.log(`  → Rejected: contains HTML meta content`);
+					return false;
+				}
+
+				// Skip directory navigation
+				if (filename === '..' || filename === '.' || filename === '../' || filename === './') {
+					console.log(`  → Rejected: directory navigation`);
+					return false;
+				}
+
+				// Skip very long strings (likely not filenames)
+				if (filename.length > 100) {
+					console.log(`  → Rejected: too long (${filename.length} chars)`);
+					return false;
+				}
+
+				// Skip strings with HTML tags
+				if (filename.includes('<') || filename.includes('>')) {
+					console.log(`  → Rejected: contains HTML tags`);
+					return false;
+				}
+
+				// More permissive filename validation
+				// Allow: letters, numbers, spaces, hyphens, underscores, parentheses, brackets, dots
+				const validCharsRegex = /^[a-zA-Z0-9\s\-_.()\[\]]+$/;
+				if (!validCharsRegex.test(filename)) {
+					console.log(`  → Rejected: contains invalid characters`);
+					return false;
+				}
+
+				// Should have a file extension
+				const hasExtension = /\.[a-zA-Z0-9]{1,10}$/.test(filename);
+				if (!hasExtension) {
+					console.log(`  → Rejected: no valid file extension`);
+					return false;
+				}
+
+				// Reasonable length
+				const isReasonableLength = filename.length >= 1 && filename.length <= 100;
+				if (!isReasonableLength) {
+					console.log(`  → Rejected: unreasonable length`);
+					return false;
+				}
+
+				console.log(`  → ✅ Accepted: "${filename}"`);
+				return true;
+			}
+
+			// Apply filtering to existing files
+			console.log('Files before filtering:', files);
+			files = files.filter(isValidFilename);
+			console.log('Files after filtering:', files);
+
+			// Strategy 3: Look for file patterns in the text, but be more selective
+			if (files.length === 0) {
+				console.log('No files found in HTML links, trying pattern matching...');
+
+				// Look for common file extensions with more permissive patterns
+				const filePatterns = [
+					// More inclusive pattern that allows parentheses, spaces, hyphens, etc.
+					/(?:^|\s|>)([a-zA-Z0-9\s\-_.()\[\]]+\.[a-zA-Z0-9]{1,6})(?:\s|<|$)/g,
+					// Specific common file types
+					/(?:^|\s|>)([a-zA-Z0-9\s\-_.()\[\]]+\.(?:txt|pdf|doc|docx|jpg|jpeg|png|gif|bmp|svg|zip|rar|tar|gz|mp3|mp4|avi|mov|wmv))/gi,
+					// Quoted filenames (often in HTML attributes)
+					/"([a-zA-Z0-9\s\-_.()\[\]]+\.[a-zA-Z0-9]{1,6})"/g,
+					/'([a-zA-Z0-9\s\-_.()\[\]]+\.[a-zA-Z0-9]{1,6})'/g
+				];
+
+				for (const pattern of filePatterns) {
+					let patternMatch;
+					while ((patternMatch = pattern.exec(data)) !== null) {
+						const filename = patternMatch[1].trim();
+						console.log(`Pattern found potential file: "${filename}"`);
+						if (isValidFilename(filename) && !files.includes(filename)) {
+							files.push(filename);
+						}
+					}
+				}
+			}
+
+			// Remove duplicates and sort
+			files = [...new Set(files)].sort();
+
+			console.log('Final valid files found:', files);
+
+			if (files.length === 0) {
+				fileManagement.innerHTML = `
+					<div class="alert alert-info" role="alert">
+						<i class="bi bi-inbox"></i> No files uploaded yet.
+						<hr>
+						<details>
+							<summary>Debug Info (click to expand)</summary>
+							<div class="small">
+								<p><strong>Server Response Preview:</strong></p>
+								<pre style="font-size: 0.8em; max-height: 200px; overflow-y: auto; background: #1a1a1a; padding: 10px; border-radius: 4px;">${data.substring(0, 1000)}</pre>
+								<p class="mt-2"><em>If you see your files in the response above, they might not match our detection patterns. Use "Manual Delete" to remove specific files.</em></p>
+							</div>
+						</details>
+					</div>
+				`;
+				return;
+			}
+
+			// Create file list with delete buttons
+			let fileListHTML = '<div class="list-group">';
+
+			files.forEach(filename => {
+				// Escape filename for safe HTML insertion
+				const safeFilename = filename.replace(/['"<>&]/g, function (match) {
+					switch (match) {
+						case "'": return '&#39;';
+						case '"': return '&quot;';
+						case '<': return '&lt;';
+						case '>': return '&gt;';
+						case '&': return '&amp;';
+						default: return match;
+					}
+				});
+
+				fileListHTML += `
+					<div class="list-group-item list-group-item-dark d-flex justify-content-between align-items-center">
+						<div>
+							<i class="bi bi-file-earmark me-2"></i>
+							<strong>${safeFilename}</strong>
+						</div>
+						<button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteFile('${safeFilename}')">
+							<i class="bi bi-trash"></i> Delete
+						</button>
+					</div>
+				`;
+			});
+
+			fileListHTML += '</div>';
+			fileManagement.innerHTML = fileListHTML;
+		}
+
+		function deleteFile(filename) {
+			if (!confirm(`Are you sure you want to delete "${filename}"?`)) {
+				return;
+			}
+
+			const deleteUrl = `/upload/${encodeURIComponent(filename)}`;
+
+			fetch(deleteUrl, {
+				method: 'DELETE'
+			})
+				.then(response => {
+					const uploadResult = document.getElementById('uploadResult');
+
+					if (response.ok) {
+						// Show success message
+						uploadResult.innerHTML = `
+							<div class="alert alert-success" role="alert">
+								<h4 class="alert-heading"><i class="bi bi-check-circle"></i> Delete Successful!</h4>
+								<p>File "${filename}" has been deleted successfully.</p>
+							</div>
+						`;
+
+						// Refresh the file list
+						loadUploadedFiles();
+					} else if (response.status === 405) {
+						// Method Not Allowed - DELETE not supported
+						uploadResult.innerHTML = `
+							<div class="alert alert-warning" role="alert">
+								<h4 class="alert-heading"><i class="bi bi-shield-x"></i> Delete Not Allowed</h4>
+								<p>This server does not support file deletion (DELETE method not permitted).</p>
+								<hr>
+								<p class="mb-0"><strong>Server Status:</strong> 405 Method Not Allowed</p>
+								<small class="text-muted">File deletion is disabled on this server configuration.</small>
+							</div>
+						`;
+					} else if (response.status === 403) {
+						// Forbidden - Access denied
+						uploadResult.innerHTML = `
+							<div class="alert alert-danger" role="alert">
+								<h4 class="alert-heading"><i class="bi bi-shield-slash"></i> Delete Forbidden</h4>
+								<p>You don't have permission to delete files from this server.</p>
+								<hr>
+								<p class="mb-0"><strong>Server Status:</strong> 403 Forbidden</p>
+								<small class="text-muted">Contact the administrator if you believe this is an error.</small>
+							</div>
+						`;
+					} else if (response.status === 404) {
+						// Not Found - File doesn't exist
+						uploadResult.innerHTML = `
+							<div class="alert alert-info" role="alert">
+								<h4 class="alert-heading"><i class="bi bi-file-earmark-x"></i> File Not Found</h4>
+								<p>The file "${filename}" was not found on the server.</p>
+								<hr>
+								<p class="mb-0"><strong>Server Status:</strong> 404 Not Found</p>
+								<small class="text-muted">The file may have already been deleted or moved.</small>
+							</div>
+						`;
+
+						// Refresh the file list since the file doesn't exist anyway
+						loadUploadedFiles();
+					} else {
+						// Other error status codes
+						uploadResult.innerHTML = `
+							<div class="alert alert-danger" role="alert">
+								<h4 class="alert-heading"><i class="bi bi-x-circle"></i> Delete Failed!</h4>
+								<p>Could not delete "${filename}" due to a server error.</p>
+								<hr>
+								<p class="mb-0"><strong>Server Status:</strong> ${response.status} ${response.statusText}</p>
+								<small class="text-muted">Try again later or contact the administrator.</small>
+							</div>
+						`;
+					}
+				})
+				.catch(error => {
+					const uploadResult = document.getElementById('uploadResult');
+					uploadResult.innerHTML = `
+						<div class="alert alert-danger" role="alert">
+							<h4 class="alert-heading"><i class="bi bi-wifi-off"></i> Connection Error</h4>
+							<p>Unable to connect to the server to delete "${filename}".</p>
+							<hr>
+							<p class="mb-0"><strong>Error:</strong> ${error.message}</p>
+							<small class="text-muted">Check your connection and try again.</small>
+						</div>
+					`;
+				});
+		}
+
+		// Manual delete functions
+		function toggleManualDelete() {
+			const section = document.getElementById('manualDeleteSection');
+			if (section.style.display === 'none') {
+				section.style.display = 'block';
+			} else {
+				section.style.display = 'none';
+			}
+		}
+
+		function deleteManualFile() {
+			const filename = document.getElementById('manualFilename').value.trim();
+			if (!filename) {
+				alert('Please enter a filename to delete.');
+				return;
+			}
+
+			// Call the same delete function
+			deleteFile(filename);
+
+			// Clear the input
+			document.getElementById('manualFilename').value = '';
+		}
+
+		// Auto-load files when page loads
+		document.addEventListener('DOMContentLoaded', function () {
+			loadUploadedFiles();
+		});
+	</script>
+</body>
+
+</html>

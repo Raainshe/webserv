@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Welcome to Default webserv!</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+	<style>
+		body {
+			background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+			min-height: 100vh;
+		}
+
+		.navbar {
+			background: rgba(0, 0, 0, 0.1) !important;
+		}
+	</style>
+</head>
+
+<body class="text-white">
+	<nav class="navbar navbar-expand-lg navbar-dark">
+		<div class="container">
+			<span class="navbar-brand">
+				<i class="bi bi-gear-fill"></i> webserv/1.0
+			</span>
+			<span class="navbar-text">
+				<i class="bi bi-hdd-network"></i> Default Configuration
+			</span>
+		</div>
+	</nav>
+
+	<div class="container mt-5">
+		<div class="row justify-content-center">
+			<div class="col-lg-8">
+				<div class="card bg-dark border-light">
+					<div class="card-header bg-secondary text-white border-light">
+						<h1 class="card-title mb-0">
+							<i class="bi bi-house-gear"></i> Welcome to Default webserv!
+						</h1>
+					</div>
+					<div class="card-body text-white">
+						<p class="lead">This is the default server configuration running on localhost:8080</p>
+
+						<div class="alert alert-dark border-light" role="alert">
+							<h4 class="alert-heading"><i class="bi bi-list-ul"></i> Available Features:</h4>
+							<div class="row">
+								<div class="col-md-6">
+									<ul class="list-unstyled">
+										<li class="mb-2">
+											<i class="bi bi-folder text-warning"></i>
+											<strong>Autoindex:</strong> Directory listing enabled
+										</li>
+										<li class="mb-2">
+											<i class="bi bi-cloud-upload text-success"></i>
+											<strong>File Upload:</strong> POST to /upload endpoint
+										</li>
+									</ul>
+								</div>
+								<div class="col-md-6">
+									<ul class="list-unstyled">
+										<li class="mb-2">
+											<i class="bi bi-code-slash text-info"></i>
+											<strong>CGI Support:</strong> PHP scripts via /cgi-bin/
+										</li>
+										<li class="mb-2">
+											<i class="bi bi-shield-check text-primary"></i>
+											<strong>Methods:</strong> GET, POST allowed
+										</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+
+						<div class="alert alert-warning" role="alert">
+							<h5 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Configuration Info:
+							</h5>
+							<ul class="list-unstyled mb-0">
+								<li><strong>Server Name:</strong> <code>localhost</code></li>
+								<li><strong>Port:</strong> <code>8080</code></li>
+								<li><strong>Document Root:</strong> <code>/test_files/www3/</code></li>
+								<li><strong>Max Body Size:</strong> <code>1M</code></li>
+								<li><strong>Custom Error Pages:</strong> <code>404 → /404.html</code></li>
+							</ul>
+						</div>
+
+						<div class="d-grid gap-2 d-md-flex justify-content-md-start">
+							<a href="/upload.html" class="btn btn-success">
+								<i class="bi bi-cloud-upload"></i> Upload Files
+							</a>
+							<a href="/cgi-bin/hello.py" class="btn btn-info">
+								<i class="bi bi-code-slash"></i> CGI Scripts
+							</a>
+							<a href="/images/" class="btn btn-warning">
+								<i class="bi bi-images"></i> Images
+							</a>
+						</div>
+					</div>
+					<div class="card-footer bg-dark border-light text-center text-muted">
+						<small>
+							<i class="bi bi-gear"></i> Powered by webserv/1.0 - Default Configuration
+						</small>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
